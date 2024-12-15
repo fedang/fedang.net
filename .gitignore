@@ -1,0 +1,4 @@
+*.lock
+*.old
+node_modules
+public

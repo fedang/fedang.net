@@ -1,0 +1,6 @@
+[submodule "hugo-chilldark"]
+	path = hugo-chilldark
+	url = https://github.com/fedang/hugo-chilldark
+[submodule "themes/chilldark"]
+	path = themes/chilldark
+	url = https://github.com/fedang/hugo-chilldark
