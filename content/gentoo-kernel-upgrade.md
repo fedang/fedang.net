@@ -1,5 +1,6 @@
 +++
 title = "Gentoo kernel upgrade"
+summary = "Little howto on updating the kernel in a Gentoo system"
 +++
 
 ## Preliminary steps
@@ -58,7 +59,6 @@ make menuconfig
 Manually editing the `.config` file is highly discouraged.
 {{< /note >}}
 
-
 ## Building
 
 Once you finished setting your configuration, you can build your kernel with make.
@@ -76,14 +76,14 @@ Firstly, install the microcode firmware and the tool to manage it.
 emerge sys-firmware/intel-microcode
 ```
 
-Use the newly installed iucode_tool to get the processor signature and search a microcode bundle with a matching signature.
+Use the newly installed `iucode_tool` to get the processor signature and search a microcode bundle with a matching signature.
 
 ```sh {class="cmd-root"}
 iucode_tool -S
 iucode_tool -S -l /lib/firmware/intel-ucode/*
 ```
 
-Enable in the kernel configuration the microcode loading features. Then, add in the Firmware loading facility the microcode
+Enable in the kernel configuration the microcode loading features. Then, add in the `Firmware loading facility` the microcode
 bundle found before as a named firmware blob.
 
 After building the kernel, you can easily verify after the boot that the microcode is loaded with dmesg.
