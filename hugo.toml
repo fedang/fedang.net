@@ -1,5 +1,11 @@
-baseURL = 'https://example.org/'
+baseURL = 'https://fedang.net'
 languageCode = 'en-us'
-title = 'My New Hugo Site'
+title = '~fedang'
 
 theme = 'chilldark'
+
+[params.author]
+	name = "Federico Angelilli"
+
+[security]
+  enableInlineShortcodes = true
