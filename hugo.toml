@@ -4,6 +4,8 @@ title = '~fedang'
 
 theme = 'chilldark'
 
+enableRobotsTXT = true
+
 [params.author]
 	name = "Federico Angelilli"
 
