@@ -1,10 +1,9 @@
 baseURL = 'https://fedang.net'
 languageCode = 'en-us'
 title = '~fedang'
-
 theme = 'chilldark'
-
 enableRobotsTXT = true
+enableGitInfo = true
 
 [params.author]
 	name = "Federico Angelilli"
