@@ -1,23 +1,23 @@
 #!/bin/sh
 
-LIGHT=monokailight
-DARK=onedark
+# https://xyproto.github.io/splash/docs/all.html
+
+LIGHT=trac
+DARK=modus-vivendi
 CSS=assets/css/syntax.css
 
 cat << EOF > $CSS
-.cmd-user .line ::before {
+.cmd-root .cl::before {
   color: #669900;
   font-weight: bold;
   user-select: none;
-  content: "user $"
-  margin-right: 1em;
+  content: "user $ ";
 }
-.cmd-root .line ::before {
+.cmd-root .cl::before {
   color: #ff3333;
   font-weight: bold;
   user-select: none;
-  content: "root #"
-  margin-right: 1em;
+  content: "root # ";
 }
 EOF
 
