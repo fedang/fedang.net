@@ -1,9 +1,7 @@
 +++
-title = 'Home'
-date = 2024-01-01T08:00:00-07:00
-draft = false
+subtitle = "Federico Angelilli {{< secondary >}} {{< dash >}} main@fedang.net {{< /secondary >}}"
 +++
 
-Federico Angelilli {{< secondary >}} {{< dash >}} main@fedang.net {{< /secondary >}}
+## Welcome
 
-
+This is my personal space online. Hopefully you will enjoy it as much as me.

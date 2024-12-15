@@ -7,5 +7,8 @@ theme = 'chilldark'
 [params.author]
 	name = "Federico Angelilli"
 
+[params]
+	bottom_text = "**🅭** [BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)"
+
 [security]
   enableInlineShortcodes = true
