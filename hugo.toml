@@ -5,10 +5,16 @@ theme = 'chilldark'
 enableRobotsTXT = true
 enableGitInfo = true
 
+[frontmatter]
+  date = ['date', 'publishdate', 'pubdate', 'published', 'lastmod', ':git']
+  lastmod = [':git', 'lastmod', 'date', 'publishdate' ]
+  publishDate = ['publishdate', 'published', 'date']
+
 [params.author]
 	name = "Federico Angelilli"
 
 [params]
+	title_crumbs = false
 	bottom_text = "**🅭** [BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)"
 	custom_css = ["css/syntax.css"]
 

@@ -1,6 +1,8 @@
 +++
 title = "Gentoo kernel upgrade"
-summary = "Little howto on updating the kernel in a Gentoo system"
+summary = "A brief howto on updating the kernel on a Gentoo system."
+categories = [ "linux", "article" ]
+tags = [ "gentoo", "kernel", "linux", "sysadmin" ]
 +++
 
 ## Preliminary steps
