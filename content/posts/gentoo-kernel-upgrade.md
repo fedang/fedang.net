@@ -3,6 +3,7 @@ title = "Gentoo kernel upgrade"
 summary = "A brief howto on updating the kernel on a Gentoo system."
 categories = [ "linux", "guide" ]
 tags = [ "gentoo", "kernel", "linux", "sysadmin" ]
+date = "2024-12-10"
 +++
 
 In this short guide I summarized the necessary steps to upgrade the
