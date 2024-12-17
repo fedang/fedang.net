@@ -16,14 +16,14 @@ int main() {
 
 ## You can find me on
 
-{{< icon github small >}}       [github](https://github.com/fedang)
+{{< icon github small >}}       Github as [fedang](https://github.com/fedang)
 
-{{< icon gitlab small >}}       [gitlab](https://gitlab.com/fedang)
+{{< icon youtube small >}}      Youtube as [@fedang](https://www.youtube.com/@fedang)
 
-{{< icon twitch small >}}       [twitch](https://www.twitch.tv/fed_ang)
+{{< icon twitch small >}}       Twitch as [fed_ang](https://www.twitch.tv/fed_ang)
 
-{{< icon youtube small >}}      [youtube](https://www.youtube.com/@fedang)
+{{< icon reddit-alien small >}} Reddit as [u/fed_ang](https://www.reddit.com/user/fed_ang)
 
-{{< icon reddit-alien small >}} [reddit](https://www.reddit.com/user/fed_ang)
+{{< icon bluesky small >}}      Bluesky as [fedang.net](https://bsky.app/profile/fedang.net)
 
-{{< icon bluesky small >}}      [bluesky](https://bsky.app/profile/fedang.net)
+{{< icon discord small >}}      Discord as *@fed_ang*
