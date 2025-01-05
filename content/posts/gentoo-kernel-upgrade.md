@@ -163,6 +163,7 @@ dmesg | grep microcode
 ```
 
 ## References
+
 - https://wiki.gentoo.org/wiki/Kernel
 - https://wiki.gentoo.org/wiki/Kernel/Upgrade
 - https://wiki.gentoo.org/wiki/Kernel/Removal
