@@ -15,7 +15,7 @@ enableGitInfo = true
 
 [params]
 	title_crumbs = false
-	bottom_text = "[BY-NC-SA 4.0]({{% ref license %}}) [{{< icon creative-commons small >}}](https://creativecommons.org/licenses/by-nc-sa/4.0/)"
+	bottom_text = "Federico Angelilli {{< dash >}} [BY-NC-SA 4.0]({{% ref license %}}) [{{< icon creative-commons small >}}](https://creativecommons.org/licenses/by-nc-sa/4.0/)"
 	custom_css = ["css/syntax.css"]
 
 [security]
