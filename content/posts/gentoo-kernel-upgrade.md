@@ -50,26 +50,27 @@ zcat /proc/config.gz > /usr/src/linux/.config
 ```
 
 Then, you will have to update the configuration file.
-The *oldconfig* command will interactively prompt you to insert values for the new options.
+The **oldconfig** target will interactively prompt you to insert values for the new options.
 
 ```sh {class="cmd-root"}
 make oldconfig
 ```
 
-Alternatively, the *olddefconfig* command will automatically insert default values for the new options.
+Alternatively, **olddefconfig** will automatically insert default values for the new options.
 
 ```sh {class="cmd-root"}
 make olddefconfig
 ```
 
-To easily change more configuration options you can use the *menuconfig* command, which will start an interactive ncurses interface.
+To easily change more configuration options you can use **menuconfig**, which will start an interactive ncurses interface.
 
 ```sh {class="cmd-root"}
 make menuconfig
 ```
 
 {{< note Warning >}}
-Manually editing the `.config` file is highly discouraged.
+Manually editing the `.config` file is highly discouraged,
+since configurations options have dependencies.
 {{< /note >}}
 
 ## Building
@@ -82,7 +83,7 @@ You can speed up the build process by using multiple make jobs.
 It is helpful to determine the number of cpu threads with `nproc`.
 
 ```sh {class="cmd-root"}
-make -jN
+make -j$(nproc)
 ```
 
 ## Installation
@@ -90,7 +91,7 @@ make -jN
 First of all, mount the boot partition, if it is not already mounted.
 
 ```sh {class="cmd-root"}
-mount /dev/XXX /boot
+mount /boot
 ```
 
 Then, you can install the new kernel and modules.
@@ -121,18 +122,41 @@ emerge sys-kernel/linux-firmware
 ```
 
 Now you can reboot your machine and everything should hopefully work as intended.
+
+## Clean up
+
 It is a good habits to keep the old kernel files around (at least until you have verified the new ones).
+
+However, if you have a few old kernels in your boot partition you may want to remove some of them.
+
+```sh {class="cmd-root"}
+rm /boot/System.map-A.B.C-gentoo
+rm /boot/config-A.B.C-gentoo
+rm /boot/vmlinuz-A.B.C-gentoo
+```
+
+Then, remember to update GRUB (or your bootloader of choice).
+
+```sh {class="cmd-root"}
+grub-mkconfig -o /boot/grub/grub.cfg
+```
 
 ## Addenda
 
 ### Nvidia drivers
 
 I will not delve too much on the details here.
-You can check exactly which kernel options features to enable on the wiki.
+You can check exactly which kernel options features to enable on the wiki [^nvidia].
+
+However I recently found the solution to a problem which caused my tty to be blank.
+It was caused by the kernel options: `FB_SIMPLE`, `SYSFB_SIMPLEFB`, `DRM_SIMPLEDRM`.
+They should all be disabled to work with newer nvidia drivers [^fb-nvidia].
 
 ```sh {class="cmd-root"}
 emerge x11-drivers/nvidia-drivers
 ```
+
+If you already installed the drivers, `@module-rebuild` should automatically rebuild them.
 
 ### Intel microcode
 
@@ -151,7 +175,7 @@ iucode_tool -S -l /lib/firmware/intel-ucode/*
 ```
 
 Enable in the kernel configuration the microcode loading features and add in
-the *Firmware loading facility* the microcode bundle found before as a named
+the **Firmware loading facility** the microcode bundle found before as a named
 firmware blob, then build the kernel.
 
 Now build and install the kernel.
@@ -162,10 +186,14 @@ Verify after the rebooting that the microcode is loaded by the kernel.
 dmesg | grep microcode
 ```
 
+For more details see the wiki [^intel].
+
 ## References
 
 - https://wiki.gentoo.org/wiki/Kernel
 - https://wiki.gentoo.org/wiki/Kernel/Upgrade
 - https://wiki.gentoo.org/wiki/Kernel/Removal
-- https://wiki.gentoo.org/wiki/Intel_microcode
-- https://wiki.gentoo.org/wiki/NVIDIA/nvidia-drivers
+
+[^nvidia]: https://wiki.gentoo.org/wiki/NVIDIA/nvidia-drivers
+[^fb-nvidia]: https://forums.gentoo.org/viewtopic-t-1157629-start-25.html
+[^intel]: https://wiki.gentoo.org/wiki/Intel_microcode
