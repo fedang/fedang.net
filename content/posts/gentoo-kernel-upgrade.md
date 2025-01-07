@@ -150,7 +150,7 @@ You can check exactly which kernel options features to enable on the wiki[^nvidi
 
 However I recently found the solution to a problem which caused my tty to be blank.
 I had accidentally activated `FB_SIMPLE`, `SYSFB_SIMPLEFB` and `DRM_SIMPLEDRM`.
-They should all be disabled to work with newer nvidia drivers[^fb-nvidia].
+They should cause problems with newer nvidia drivers and should be disabled[^fb-nvidia].
 
 ```sh {class="cmd-root"}
 emerge x11-drivers/nvidia-drivers
