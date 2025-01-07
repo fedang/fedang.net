@@ -146,11 +146,11 @@ grub-mkconfig -o /boot/grub/grub.cfg
 ### Nvidia drivers
 
 I will not delve too much on the details here.
-You can check exactly which kernel options features to enable on the wiki [^nvidia].
+You can check exactly which kernel options features to enable on the wiki[^nvidia].
 
 However I recently found the solution to a problem which caused my tty to be blank.
-It was caused by the kernel options: `FB_SIMPLE`, `SYSFB_SIMPLEFB`, `DRM_SIMPLEDRM`.
-They should all be disabled to work with newer nvidia drivers [^fb-nvidia].
+I had accidentally activated `FB_SIMPLE`, `SYSFB_SIMPLEFB` and `DRM_SIMPLEDRM`.
+They should all be disabled to work with newer nvidia drivers[^fb-nvidia].
 
 ```sh {class="cmd-root"}
 emerge x11-drivers/nvidia-drivers
@@ -186,7 +186,7 @@ Verify after the rebooting that the microcode is loaded by the kernel.
 dmesg | grep microcode
 ```
 
-For more details see the wiki [^intel].
+For more details see the wiki[^intel].
 
 ## References
 
