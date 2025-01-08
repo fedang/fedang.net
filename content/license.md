@@ -2,6 +2,7 @@
 title = "License"
 summary = " "
 no_pubinfo = true
+no_rssfeed = true
 +++
 
 All of the content on this website (articles, posts, etc.) is licensed under the Creative Commons
