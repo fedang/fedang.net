@@ -11,10 +11,10 @@ tags = [ "linux", "gentoo", "display-manager", "ly", "tty" ]
 ## Premise
 
 A few months ago, my Gentoo install came to be in a rather annoying predicament.
-Instead of the usual login tty, I was greeted by a black screen after booting from GRUB.
+After booting from GRUB, I was greeted by a black screen instead of the usual login TTY.
 I inserted my credentials nonetheless, and to my relief, I could successfully launch X.
 
-I was confident that the culprit was some kernel option or driver.
+I was confident that the culprit was a kernel option for the video driver.
 Yet I did not have quite enough time or motivation to investigate,
 so I eventually ended up getting used to logging in from a blank tty.
 
@@ -57,7 +57,7 @@ Now my TTYs can be seen once again, hooray!
 
 ## Moving to Openrc-init
 
-Unfortunately `ly` does not support `sysvinit`, Gentoo's default init system.
+Unfortunately, `ly` does not support `sysvinit`, Gentoo's default init system.
 Since my system is based around OpenRC, I decided to enable OpenRC's own init.
 
 For an easier transition I added the `sysv-utils` use flags to `sys-apps/openrc` and reemerged.
@@ -77,11 +77,11 @@ rc-update del agetty.tty2
 ## Fixing the xinitrc
 
 At this point, `ly` is being displayed in the second tty.
-The input works correctly and I can log into a shell session.
+The input also worked and I could log into a shell session.
 
 But the same can't be said for the xinitrc environment.
-Despite having made the `.xinitrc` an executable shell script, I am
-instantly logged out every time I try it.
+Despite having made the `.xinitrc` an executable shell script, I was
+instantly logged out every time I tried it.
 
 After some debugging, I discovered that the root of the problem was my home layout.
 To adopt the XDG specification, I had moved the xinitrc and most of my configuration files to the `.config`
