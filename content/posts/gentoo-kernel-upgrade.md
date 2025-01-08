@@ -7,10 +7,12 @@ tags = [ "linux", "gentoo", "kernel", "sysadmin" ]
 date = "2024-12-10"
 +++
 
-In this short guide I summarized the necessary steps to upgrade the
-kernel in a Gentoo system.
+I wrote this short guide to keep track of the upgrade procedure for the kernel in my Gentoo system.
+It assumes an already working installation and is not as exhaustive as the Gentoo wiki,
+but it summarizes the main steps.
 
 We will update from `linux-A.B.C` to `linux-X.Y.Z`.
+There are also sections about Nvidia and Intel additions.
 
 ## Preliminary steps
 
@@ -70,13 +72,13 @@ make menuconfig
 ```
 
 {{< note Warning >}}
-Manually editing the `.config` file is highly discouraged,
-since configurations options have dependencies.
+Manually editing the `.config` file is highly discouraged
+since configuration options have dependencies.
 {{< /note >}}
 
 ## Building
 
-Once you finished setting your configuration, you can build your kernel with make.
+Once you are done changing your configuration, you can build your kernel with make.
 The [NVIDIA drivers](#nvidia-drivers) and [Intel microcode](#intel-microcode) require you
 to do extra steps before building.
 
@@ -89,7 +91,7 @@ make -j$(nproc)
 
 ## Installation
 
-First of all, mount the boot partition, if it is not already mounted.
+Firstly, mount the boot partition if it is not already mounted.
 
 ```sh {class="cmd-root"}
 mount /boot
@@ -126,9 +128,9 @@ Now you can reboot your machine and everything should hopefully work as intended
 
 ## Clean up
 
-It is a good habits to keep the old kernel files around (at least until you have verified the new ones).
+It is a good habit to keep the old kernel files around (at least until you have verified the new ones).
 
-However, if you have a few old kernels in your boot partition you may want to remove some of them.
+If you have a few old kernels in your boot partition, you may want to remove some of them.
 
 ```sh {class="cmd-root"}
 rm /boot/System.map-A.B.C-gentoo
@@ -149,7 +151,7 @@ grub-mkconfig -o /boot/grub/grub.cfg
 I will not delve too much on the details here.
 You can check exactly which kernel options features to enable on the wiki[^nvidia].
 
-However, I recently found the solution to a problem which caused my TTYs to be blank.
+However, I recently found the solution to a problem that caused my TTYs to be blank.
 I had accidentally activated `FB_SIMPLE`, `SYSFB_SIMPLEFB` and `DRM_SIMPLEDRM`.
 These options cause problems with newer nvidia drivers and should be disabled[^fb-nvidia].
 
@@ -181,13 +183,13 @@ firmware blob, then build the kernel.
 
 Now build and install the kernel.
 
-Verify after the rebooting that the microcode is loaded by the kernel.
+Verify after rebooting that the microcode is loaded by the kernel.
 
 ```sh {class="cmd-root"}
 dmesg | grep microcode
 ```
 
-For more details see the wiki[^intel].
+For more details, see the wiki[^intel].
 
 ## References
 

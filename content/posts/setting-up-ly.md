@@ -37,7 +37,7 @@ I had already all the dependencies installed, except for Zig.
 emerge --ask dev-lang/zig-bin
 ```
 
-After cloning the repository I installed `ly` following the instructions.
+After cloning the repository, I installed `ly` following the instructions.
 
 ```sh {class="cmd-root"}
 zig build installopenrc
@@ -93,7 +93,7 @@ This is the reason running `startx` from a shell worked, while the same scripts 
 when run by `ly`.
 
 I moved the environment initialization to the `.zprofile` file, which is always sourced.
-After this last change, I could finally start a X session from `ly`. :partying_face:
+After this last change, I could finally start an X session from `ly`. :partying_face:
 
 ## Configuring Ly
 
