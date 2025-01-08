@@ -3,7 +3,7 @@ title = "Gentoo kernel upgrade"
 subtitle = ""
 summary = "A brief howto on updating the kernel on a Gentoo system."
 categories = [ "linux", "guide" ]
-tags = [ "gentoo", "kernel", "linux", "sysadmin" ]
+tags = [ "linux", "gentoo", "kernel", "sysadmin" ]
 date = "2024-12-10"
 +++
 
@@ -149,9 +149,9 @@ grub-mkconfig -o /boot/grub/grub.cfg
 I will not delve too much on the details here.
 You can check exactly which kernel options features to enable on the wiki[^nvidia].
 
-However I recently found the solution to a problem which caused my tty to be blank.
+However, I recently found the solution to a problem which caused my TTYs to be blank.
 I had accidentally activated `FB_SIMPLE`, `SYSFB_SIMPLEFB` and `DRM_SIMPLEDRM`.
-They should cause problems with newer nvidia drivers and should be disabled[^fb-nvidia].
+These options cause problems with newer nvidia drivers and should be disabled[^fb-nvidia].
 
 ```sh {class="cmd-root"}
 emerge x11-drivers/nvidia-drivers
