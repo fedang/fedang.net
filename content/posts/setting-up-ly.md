@@ -3,9 +3,8 @@ title = 'Setting up Ly on Gentoo'
 date = 2025-01-08T01:00:52+01:00
 categories = [ "linux", "guide" ]
 tags = [ "linux", "gentoo", "display-manager", "ly", "tty" ]
-#summary = "My experience with installing the `ly` display manager."
 summary = """After my TTY login run into trouble, I decided to try the `ly` display manager. \
-I described what I did in order to install and enable it on my Gentoo system."""
+I wrote about my experience in getting it to work on my Gentoo system, describing each step in the process."""
 +++
 
 > Ly is a lightweight TUI (ncurses-like) display manager for Linux and BSD.

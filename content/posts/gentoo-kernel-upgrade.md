@@ -5,12 +5,12 @@ categories = [ "linux", "guide" ]
 tags = [ "linux", "gentoo", "kernel", "sysadmin" ]
 date = "2024-12-10"
 #summary = "A brief howto on updating the kernel on a Gentoo system."
-summary = """I wrote this short guide to keep track of the upgrade procedure for the kernel on a Gentoo system. \
-The main steps are summarized, with additional sections about the Nvidia drivers and Intel microcode."""
 +++
 
 I wrote this short guide to keep track of the upgrade procedure for the kernel on a Gentoo system.
 The main steps are summarized, with additional sections about the Nvidia drivers and Intel microcode.
+
+<!--more-->
 
 This guide should be used as a checklist and assumes an already working installation.
 If you need more exhaustive documentation, refer to the Gentoo wiki.
@@ -147,7 +147,7 @@ Then, remember to update GRUB (or your bootloader of choice).
 grub-mkconfig -o /boot/grub/grub.cfg
 ```
 
-## Addenda
+## Addendum
 
 ### Nvidia drivers
 
