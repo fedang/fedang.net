@@ -4,6 +4,7 @@ title = '~fedang'
 theme = 'chilldark'
 enableRobotsTXT = true
 enableGitInfo = true
+enableEmoji = true
 
 [frontmatter]
   date = ['date', 'publishdate', 'pubdate', 'published', 'lastmod', ':git']
