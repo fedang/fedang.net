@@ -2,7 +2,7 @@
 
 # https://xyproto.github.io/splash/docs/all.html
 
-LIGHT=trac
+LIGHT=xcode
 DARK=modus-vivendi
 CSS=assets/css/syntax.css
 
