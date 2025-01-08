@@ -1,5 +1,5 @@
 +++
-subtitle = "Federico Angelilli {{< secondary >}} {{< dash >}} main<span class=\"hide\">jib</span>&commat;<!--whatever-->fedang<span class=\"hide\">rish</span>.net {{< /secondary >}}"
+subtitle = 'Federico Angelilli {{< secondary >}} {{< dash >}} {{< email "main@fedang.net" >}} {{< /secondary >}}'
 description = "Welcome to my personal space online."
 +++
 
