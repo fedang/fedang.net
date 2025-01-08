@@ -2,10 +2,14 @@
 title = '~fedang'
 meta_title = "Federico Angelilli @ ~fedang"
 subtitle = 'Federico Angelilli {{< secondary >}} {{< dash >}} {{< email "main@fedang.net" >}} {{< /secondary >}}'
-description = "Welcome to my personal space online."
 +++
 
 ## Welcome
+
+Hello, I'm Federico. I am passionate about computers and their inner workings.
+I love programming, especially compilers and other low-level stuff.
+
+<!--more-->
 
 This is my personal space online. Hopefully you will enjoy it as much as me.
 
