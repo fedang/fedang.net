@@ -1,9 +1,9 @@
 +++
-title = 'Setting up Ly'
+title = 'Setting up Ly on Gentoo'
 date = 2025-01-08T01:00:52+01:00
 summary = "My experience with installing the `ly` display manager."
 categories = [ "linux", "guide" ]
-tags = [ "display-manager", "ly", "linux", "gentoo", "tty" ]
+tags = [ "linux", "gentoo", "display-manager", "ly", "tty" ]
 +++
 
 > Ly is a lightweight TUI (ncurses-like) display manager for Linux and BSD.
@@ -84,7 +84,7 @@ Despite having made the `.xinitrc` an executable shell script, I am
 instantly logged out every time I try it.
 
 After some debugging, I discovered that the root of the problem was my home layout.
-To adopt the XDG specification, I had moved the xinitrc and many more files to the `.config`
+To adopt the XDG specification, I had moved the xinitrc and most of my configuration files to the `.config`
 directory.
 
 The environmental variables (`PATH`, `XINITRC`, etc.) were being assigned in my `.zshrc` file,
@@ -97,7 +97,7 @@ After this last change, I could finally start a X session from `ly`. :partying_f
 
 ## Configuring Ly
 
-My initial modifications to the `/etc/ly/config.ini` are the following.
+These are my initial modifications to the `/etc/ly/config.ini` file.
 
 ```diff
 36c36
@@ -119,7 +119,7 @@ My initial modifications to the `/etc/ly/config.ini` are the following.
 174c174
 < session_log = ly-session.log
 ---
-> session_log = ~/.cache/ly-session.log
+> session_log = .cache/ly-session.log
 192c192
 < text_in_center = false
 ---
