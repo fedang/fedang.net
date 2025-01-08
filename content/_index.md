@@ -1,5 +1,6 @@
 +++
 subtitle = "Federico Angelilli {{< secondary >}} {{< dash >}} main<span class=\"hide\">jib</span>&commat;<!--whatever-->fedang<span class=\"hide\">rish</span>.net {{< /secondary >}}"
+description = "Welcome to my personal space online."
 +++
 
 ## Welcome

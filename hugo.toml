@@ -5,6 +5,7 @@ theme = 'chilldark'
 enableRobotsTXT = true
 enableGitInfo = true
 enableEmoji = true
+copyright = "Federico Angelilli © 2025"
 
 [frontmatter]
   date = ['date', 'publishdate', 'pubdate', 'published', 'lastmod', ':git']
