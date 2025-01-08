@@ -20,6 +20,7 @@ copyright = "Federico Angelilli © 2025"
 
 [params.author]
 	name = "Federico Angelilli"
+	email = "main@fedang.net"
 
 [params]
 	title_crumbs = false
