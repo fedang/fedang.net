@@ -1,22 +1,25 @@
 +++
 title = "Gentoo kernel upgrade"
 subtitle = ""
-summary = "A brief howto on updating the kernel on a Gentoo system."
+#summary = "A brief howto on updating the kernel on a Gentoo system."
 categories = [ "linux", "guide" ]
 tags = [ "linux", "gentoo", "kernel", "sysadmin" ]
 date = "2024-12-10"
 +++
 
 I wrote this short guide to keep track of the upgrade procedure for the kernel in my Gentoo system.
-It assumes an already working installation and is not as exhaustive as the Gentoo wiki,
-but it summarizes the main steps.
+The main steps are summarized, with additional sections about the Nvidia drivers and Intel microcode.
 
-We will update from `linux-A.B.C` to `linux-X.Y.Z`.
-There are also sections about Nvidia and Intel additions.
+<!--more-->
+
+This guide should be used as a checklist and assumes an already working installation.
+If you need more exhaustive documentation, refer to the Gentoo wiki.
 
 ## Preliminary steps
 
-Fetch the sources of the kernel that you want to install.
+We will update from `linux-A.B.C` to `linux-X.Y.Z`.
+
+Let's start by fetching the source of the new kernel.
 
 ```sh {class="cmd-root"}
 emerge -uDUa --with-bdeps=y =sys-kernel/gentoo-sources-X.Y.Z
