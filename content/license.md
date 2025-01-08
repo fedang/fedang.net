@@ -13,3 +13,5 @@ All of the code present on this website, unless otherwise specified, is licensed
 All registered trademarks mentioned on this website belong to their rightful owners.
 
 The source code of the website is public and can be found [here](https://github.com/fedang/fedang.net).
+
+If you find a problem with the content send me an email at `{{< email "main@fedang.net" >}}`.

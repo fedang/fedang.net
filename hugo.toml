@@ -7,6 +7,12 @@ enableGitInfo = true
 enableEmoji = true
 copyright = "Federico Angelilli © 2025"
 
+[outputs]
+	home = ['html', 'rss']
+	section = ['html']
+	taxonomy = ['html']
+	term = ['html']
+
 [frontmatter]
   date = ['date', 'publishdate', 'pubdate', 'published', 'lastmod', ':git']
   lastmod = [':git', 'lastmod', 'date', 'publishdate' ]
@@ -26,3 +32,5 @@ copyright = "Federico Angelilli © 2025"
 [markup]
   [markup.highlight]
 	noClasses = false
+  [markup.goldmark.renderer]
+	unsafe = true
