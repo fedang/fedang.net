@@ -1,9 +1,11 @@
 +++
 title = 'Setting up Ly on Gentoo'
 date = 2025-01-08T01:00:52+01:00
-summary = "My experience with installing the `ly` display manager."
 categories = [ "linux", "guide" ]
 tags = [ "linux", "gentoo", "display-manager", "ly", "tty" ]
+#summary = "My experience with installing the `ly` display manager."
+summary = """After my TTY login run into trouble, I decided to try the `ly` display manager. \
+I described what I did in order to install and enable it on my Gentoo system."""
 +++
 
 > Ly is a lightweight TUI (ncurses-like) display manager for Linux and BSD.
@@ -11,7 +13,7 @@ tags = [ "linux", "gentoo", "display-manager", "ly", "tty" ]
 ## Premise
 
 A few months ago, my Gentoo install came to be in a rather annoying predicament.
-After booting from GRUB, I was greeted by a black screen instead of the usual login TTY.
+After booting from GRUB, I was greeted by a black screen instead of the usual TTY.
 I inserted my credentials nonetheless, and to my relief, I could successfully launch X.
 
 I was confident that the culprit was a kernel option for the video driver.
