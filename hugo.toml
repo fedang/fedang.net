@@ -7,6 +7,12 @@ enableGitInfo = true
 enableEmoji = true
 copyright = "Federico Angelilli © 2025"
 
+[taxonomies]
+	category = 'categories'
+	tag = 'tags'
+	series = 'series'
+
+
 [outputs]
 	home = ['html', 'rss']
 	section = ['html']
