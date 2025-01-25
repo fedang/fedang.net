@@ -15,4 +15,4 @@ All registered trademarks mentioned on this website belong to their rightful own
 
 The source code of the website is public and can be found [here](https://github.com/fedang/fedang.net).
 
-If you find a problem with the content send me an email at `{{< email "main@fedang.net" >}}`.
+If you think that your copyright is being infringed contact me at `{{< email "main@fedang.net" >}}`.
