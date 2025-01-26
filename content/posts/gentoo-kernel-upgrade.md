@@ -7,13 +7,14 @@ date = "2024-12-10"
 #summary = "A brief howto on updating the kernel on a Gentoo system."
 +++
 
-I wrote this short guide to keep track of the upgrade procedure for the kernel on a Gentoo system.
-The main steps are summarized, with additional sections about the Nvidia drivers and Intel microcode.
+I'm writing down the procedure I usually follow when updgrading the kernel on my Gentoo system.
+This was initially just a checklist, but I later added some explanations and
+additional sections about the Nvidia drivers and Intel microcode.
 
 <!--more-->
 
-This guide should be used as a checklist and assumes an already working installation.
-If you need more exhaustive documentation, refer to the Gentoo wiki.
+I assume familiarity with the system and a working installation.
+If you need more exhaustive documentation, see the wiki and handbook[^handbook].
 
 ## Preliminary steps
 
@@ -203,3 +204,4 @@ For more details, see the wiki[^intel].
 [^nvidia]: https://wiki.gentoo.org/wiki/NVIDIA/nvidia-drivers
 [^fb-nvidia]: https://forums.gentoo.org/viewtopic-t-1157629-start-25.html
 [^intel]: https://wiki.gentoo.org/wiki/Intel_microcode
+[^handbook]: https://wiki.gentoo.org/wiki/Handbook:AMD64
