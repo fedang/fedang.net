@@ -37,4 +37,4 @@ int main() {
 - {{< icon discord small >}}      Discord as *@fed_ang*
 
 
-You can also contact me via email at  {{< secondary >}}{{< email "main@fedang.net" >}}{{< icon mail small >}} {{< /secondary >}}.
+You can also contact me via email at  *{{< email "main@fedang.net" >}}*.
