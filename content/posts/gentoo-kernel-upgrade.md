@@ -1,5 +1,5 @@
 +++
-title = "Gentoo kernel upgrade"
+title = "Kernel upgrade on Gentoo"
 subtitle = ""
 categories = [ "linux", "guide" ]
 tags = [ "linux", "gentoo", "kernel", "sysadmin" ]
