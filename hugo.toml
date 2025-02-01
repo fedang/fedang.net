@@ -41,3 +41,7 @@ copyright = "Federico Angelilli © 2025"
 	noClasses = false
   [markup.goldmark.renderer]
 	unsafe = true
+  [markup.goldmark]
+    [markup.goldmark.parser]
+      [markup.goldmark.parser.attribute]
+        title = true
