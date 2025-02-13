@@ -22,7 +22,9 @@ cat << EOF > $CSS
 EOF
 
 printf "\n/* Chroma style: %s */\n" $LIGHT >> $CSS
+printf "@media (prefers-color-scheme: light) {\n" >> $CSS
 hugo gen chromastyles --style=$LIGHT >> $CSS
+printf "}\n" >> $CSS
 printf "\n\n/* Chroma style: %s */\n" $DARK >> $CSS
 printf "@media (prefers-color-scheme: dark) {\n" >> $CSS
 hugo gen chromastyles --style=$DARK >> $CSS

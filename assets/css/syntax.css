@@ -12,6 +12,7 @@
 }
 
 /* Chroma style: xcode */
+@media (prefers-color-scheme: light) {
 /* Background */ .bg { background-color:#fff; }
 /* PreWrapper */ .chroma { background-color:#fff; }
 /* Other */ .chroma .x {  }
@@ -98,6 +99,7 @@
 /* GenericTraceback */ .chroma .gt {  }
 /* GenericUnderline */ .chroma .gl {  }
 /* TextWhitespace */ .chroma .w {  }
+}
 
 
 /* Chroma style: modus-vivendi */
