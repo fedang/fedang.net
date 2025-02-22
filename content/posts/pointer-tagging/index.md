@@ -123,26 +123,24 @@ Top                                                       Bottom
 
 ## Why is this useful?
 
-Now that we have understood the principles behind pointer tagging,
-we need to address :wink: their advantages.
+Now that we have a good grasp of the principles of pointer tagging,
+we can move on to address :wink: their practical uses and advantages.
 
-The stored metadata could be used for many things, including memory safety[^mte2].
-However, I will focus on applications for language development and interpreters.
+The metadata stored in the tags could be utilized in many ways.
+For example, Android uses it to improve memory safety through MTE[^mte2].
+From now on, I will focus on its applications in language development and interpreters.
 
-Before delving into the benefits of tagged pointers, let's see what they are replacing.
+But before delving into the benefits of this optimization, let's first see what they are replacing.
 A common approach is to heap allocate everything as an object and use
 pointers as a uniform value representation. This is what CPython does with `PyObject`.
 
 The usual alternative is a *tagged union*, which stores a union of the possible value types alongside
-an integer flag. This means less heap allocations with the cost of a bigger value type (usually 16 bytes).
+an integer flag. This results in fewer heap allocations, but comes at the cost of a larger value type (usually 16 bytes).
 Lua is currently using this approach[^lua].
 
-Is there a way to have our cake and eat it too?
-By tagging our pointers, we can decrease heap allocations and have a
-single word as our value representation.
+By tagging our pointers, we can reduce heap allocations and have a single word as our value representation.
+We can have our cake and eat it too!
 
-
-while retaining pointers as our value representation by tagging them.
 
 
 
