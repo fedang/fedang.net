@@ -93,7 +93,6 @@ float value_untag_float(value_t val) {
 #define VALUE_TO_STRING(val) (char *)VALUE_UNSET_TAG(val)
 
 // Tiny string value
-
 #define VALUE_IS_TINYSTR(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_TINYSTR)
 #define VALUE_FROM_TINYSTR(num) value_tag_tinystr(num)
 #define VALUE_TO_TINYSTR(val) value_untag_tinystr(val)

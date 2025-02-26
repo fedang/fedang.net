@@ -6,13 +6,16 @@ tags = [ "low-level", "memory", "optimization", "langdev", "interpreter" ]
 draft = true
 +++
 
-Curious about the tricks that make some interpreted languages so fast?
 Let's analyze and implement **tagged pointers**, a clever optimization
-that can reduce memory footprint and boost performance in interpreters.
+that can reduce memory footprint and boost performance.
 
 <!--more-->
 
-## Some theory
+They have a long history[^tagarch], but have still many uses to this day.
+I will give a general explanation and then focus on their applications in
+language design.
+
+## Preliminary theory
 
 Let's start with the term *pointer*, which I'll use to refer to actual **memory addresses**.
 Going forward, I will assume these to be represented as a word-sized integer.
@@ -20,7 +23,9 @@ All possible pointer values (2 to the power of the bits in a word) form the *vir
 
 In principle, all of these addresses are valid and potentially used.
 While this could be the case for older or embedded systems, modern ones won't allocate certain ranges.
-Consequently, some of the bits in a pointer will be unused (for addressing at least).
+Consequently, some of the bits in a pointer will be unused[^addressing].
+
+[^addressing]: They might still be used in certain circumstances. For example, Linux marks kernel addresses with a 1 in the MSB.
 
 First, let's see the behaviour of 32-bit architectures (e.g., x86, Arm32).
 They use *32-bit words* (hence their name), and can address up to 4 GB (4 × 1024&sup3; bytes) of memory[^pae].
@@ -130,32 +135,50 @@ The metadata stored in the tags could be utilized in many ways.
 For example, Android uses it to improve memory safety through MTE[^mte2].
 From now on, I will focus on its applications in language development and interpreters.
 
-But before delving into the benefits of this optimization, let's first see what they are replacing.
-A common approach is to heap allocate everything as an object and use
-pointers as a uniform value representation. This is what CPython does with `PyObject`.
+Before presenting the benefits of this optimization, we need to know what tagged pointers are replacing.
+For language implementations, especially interpreters, a uniform representation for all types of
+values is needed, or at least preferable[^typed].
 
-The usual alternative is a *tagged union*, which stores a union of the possible value types alongside
-an integer flag. This results in fewer heap allocations, but comes at the cost of a larger value type (usually 16 bytes).
-Lua is currently using this approach[^lua].
+A common approach is to heap allocate everything as an object and use pointers as the representation.
+This is what CPython does with `PyObject`.
+The downsides are larger objects and inefficient allocations even for small values (e.g., integers, floats).
 
-By tagging our pointers, we can reduce heap allocations and have a single word as our value representation.
-We can have our cake and eat it too!
+Another alternative is a **tagged union**, which stores a union of the possible value types alongside
+an integer flag. Lua is currently using this approach[^lua].
+Since small values are stored directly in the union, fewer allocations are needed.
+But this comes at the cost of a larger value type (usually 16 bytes).
 
+But we can have our cake and eat it too!
+With pointer tagging, we can reduce heap allocations and have a single word as our value representation.
 
+By storing some values directly in the pointer, we can avoid reading memory in those cases.
+This diminishes the probability of cache misses, which are quite expensive.
 
-
-
-
-
-
+Also, if the memory in the language is managed, eliminating a whole class of tiny
+allocations will remove some of the pressure on the garbage collector.
 
 
 ## Technique comparison
 
+We will see in details three techniques: tagged union, low bits tagging, and high bits tagging.
 
-There are other clever ways to stuff extra information in a pointer.
-A technique called NaN boxing makes use specific bit configurations of the IEEE 754 double precision float
-to store pointers (up to 52 bits).
+### Tagged union
+
+### Low bits tagging
+
+### High bits tagging
+
+### Alternative approaches
+
+There are also other ways to squeeze information in a pointer, which I will briefly mention.
+
+A technique called *NaN boxing* makes use specific bit configurations of the IEEE 754 double
+to store either a number or a pointer (up to 52 bits).
+This is particularly used in languages where double is the dominant number type[^nan].
+
+There is also *pointer compression*, used by the V8 Javascript engine[^v8].
+Instead of using real addresses, all the allocations are represented by 32-bit offsets in a 4 GiB heap.
+By *compressing* the pointer size, the memory footprint is reduced by up to 40%.
 
 ## A word of caution
 
@@ -167,20 +190,302 @@ While there are no standard guarantees about memory alignment, common architectu
 
 
 
-## Implementation
+## Tagged union implementation
 
+Let's start
 
-### Union
+```c
+typedef enum {
+    TAG_OBJECT,
+    TAG_INTEGER,
+    TAG_FLOAT,
+    TAG_STRING,
+	TAG_TINYSTR,
+} value_tag_t;
+```
 
+```c
+typedef struct {
+    value_tag_t tag;
+    union {
+        void *object;
+        intptr_t integer;
+        float float_;
+        char *string;
+        tinystr_t tinystr;
+    } to;
+} value_t;
+```
 
-## Tagged implementation
+```c
+// The last byte must be zero
+typedef struct {
+	char data[8];
+} tinystr_t;
+```
 
-### Low bit
+```c
+// Object value
+#define VALUE_IS_OBJECT(val) ((val).tag == TAG_OBJECT)
+#define VALUE_FROM_OBJECT(obj) ((value_t){ .tag = TAG_OBJECT, .to.object = (void *)(obj) })
+#define VALUE_TO_OBJECT(val) ((val).to.object)
 
-### High bit
+// Integer value
+#define INTEGER_MAX INTPTR_MAX
+#define INTEGER_MIN INTPTR_MIN
 
+#define VALUE_IS_INTEGER(val) ((val).tag == TAG_INTEGER)
+#define VALUE_FROM_INTEGER(num) ((value_t){ .tag = TAG_INTEGER, .to.integer = (num) })
+#define VALUE_TO_INTEGER(val) ((val).to.integer)
 
+// Float value
+#define VALUE_IS_FLOAT(val) ((val).tag == TAG_FLOAT)
+#define VALUE_FROM_FLOAT(num) ((value_t){ .tag = TAG_FLOAT, .to.float_ = (num) })
+#define VALUE_TO_FLOAT(val) ((val).to.float_)
 
+// String value
+#define VALUE_IS_STRING(val) ((val).tag == TAG_STRING)
+#define VALUE_FROM_STRING(str) ((value_t){ .tag = TAG_STRING, .to.string = (char *)(str) })
+#define VALUE_TO_STRING(val) ((val).to.string)
+
+// Tiny string value
+#define VALUE_IS_TINYSTR(val) ((val).tag == TAG_TINYSTR)
+#define VALUE_FROM_TINYSTR(str) ((value_t){ .tag = TAG_TINYSTR, .to.tinystr = (str) })
+#define VALUE_TO_TINYSTR(val) ((val).to.tinystr)
+```
+
+## Low bits tagging implementation
+
+```c
+// Only the integer tag sets the lowest bit
+typedef enum {
+    TAG_OBJECT  = 0,		// 0b000
+    TAG_INTEGER = 1,		// 0b001
+    TAG_FLOAT   = 2,		// 0b010
+    TAG_STRING  = 4,		// 0b100
+	TAG_TINYSTR = 6,		// 0b110
+} value_tag_t;
+
+typedef uintptr_t value_t;
+```
+
+```c
+#define VALUE_BITS 64
+#define VALUE_TAG_BITS 3
+#define VALUE_TAG_MASK 7	// 0b111
+
+#define VALUE_GET_TAG(val, mask) (value_tag_t)((value_t)(val) & mask)
+#define VALUE_SET_TAG(val, tag) ((value_t)(val) | tag)
+#define VALUE_UNSET_TAG(val) ((val) & ~VALUE_TAG_MASK)
+
+// Object value
+#define VALUE_IS_OBJECT(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_OBJECT)
+#define VALUE_FROM_OBJECT(obj) VALUE_SET_TAG(obj, TAG_OBJECT)
+#define VALUE_TO_OBJECT(val) (void *)VALUE_UNSET_TAG(val)
+
+// Integer value
+#define INTEGER_SHIFT 1
+#define INTEGER_MASK 1
+#define INTEGER_SIGN_BIT ((value_t)1 << (VALUE_BITS - 1))
+
+#define INTEGER_MAX (((value_t)1 << (VALUE_BITS - 1 - INTEGER_SHIFT)) - 1)
+#define INTEGER_MIN -((value_t)1 << (VALUE_BITS - 1 - INTEGER_SHIFT))
+
+#define VALUE_IS_INTEGER(val) (VALUE_GET_TAG(val, INTEGER_MASK) == TAG_INTEGER)
+#define VALUE_FROM_INTEGER(num) value_tag_integer(num)
+#define VALUE_TO_INTEGER(val) value_untag_integer(val)
+
+value_t value_tag_integer(intptr_t num) {
+	assert(num < INTEGER_MIN || num > INTEGER_MAX);
+	return (value_t)num << INTEGER_SHIFT | (num & INTEGER_SIGN_BIT) | TAG_INTEGER;
+}
+
+intptr_t value_untag_integer(value_t val) {
+	assert(VALUE_IS_INTEGER(val));
+	return (intptr_t)val >> INTEGER_SHIFT | (val & INTEGER_SIGN_BIT);
+}
+
+// Float value
+#define FLOAT_SHIFT 31
+
+#define VALUE_IS_FLOAT(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_FLOAT)
+#define VALUE_FROM_FLOAT(num) value_tag_float(num)
+#define VALUE_TO_FLOAT(val) value_untag_float(val)
+
+value_t value_tag_float(float num) {
+    union {
+        uint32_t raw;
+        float num;
+    } pun;
+    pun.num = num;
+    return VALUE_SET_TAG((value_t)pun.raw << FLOAT_SHIFT, TAG_FLOAT);
+}
+
+float value_untag_float(value_t val) {
+	assert(VALUE_IS_FLOAT(val));
+    union {
+        uint32_t raw;
+        float num;
+    } pun;
+    pun.raw = (val >> FLOAT_SHIFT) & 0xffffffff;
+    return pun.num;
+}
+
+// String value
+#define VALUE_IS_STRING(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_STRING)
+#define VALUE_FROM_STRING(str) VALUE_SET_TAG(str, TAG_STRING)
+#define VALUE_TO_STRING(val) (char *)VALUE_UNSET_TAG(val)
+
+// Tiny string value
+#define VALUE_IS_TINYSTR(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_TINYSTR)
+#define VALUE_FROM_TINYSTR(num) value_tag_tinystr(num)
+#define VALUE_TO_TINYSTR(val) value_untag_tinystr(val)
+
+value_t value_tag_tinystr(tinystr_t str) {
+	assert(str.data[7] == '\0');
+	return ((value_t)str.data[0] <<  8)
+		 | ((value_t)str.data[1] << 16)
+		 | ((value_t)str.data[2] << 24)
+		 | ((value_t)str.data[3] << 32)
+		 | ((value_t)str.data[4] << 40)
+		 | ((value_t)str.data[5] << 48)
+		 | ((value_t)str.data[6] << 56)
+		 | TAG_TINYSTR;
+}
+
+tinystr_t value_untag_tinystr(value_t val) {
+	assert(VALUE_IS_TINYSTR(val));
+    tinystr_t str = {
+		(val >>  8) & 0xff,
+		(val >> 16) & 0xff,
+		(val >> 24) & 0xff,
+		(val >> 32) & 0xff,
+		(val >> 40) & 0xff,
+		(val >> 48) & 0xff,
+		(val >> 56) & 0xff,
+	};
+    return str;
+}
+```
+
+## High bits tagging implementation
+
+```c
+// Only the integer tag sets the highest bit
+typedef enum {
+    TAG_OBJECT  = 0,	// 0b000000
+    TAG_INTEGER = 0x20,	// 0b100000
+    TAG_FLOAT   = 2,	// 0b000010
+    TAG_STRING  = 3,	// 0b000011
+	TAG_TINYSTR = 4,	// 0b000100
+} value_tag_t;
+```
+
+```c
+#define VALUE_BITS 64
+#define VALUE_TAG_BITS 6
+#define VALUE_TAG_SHIFT (VALUE_BITS - 1 - VALUE_TAG_BITS)
+#define VALUE_TAG_MASK ((value_t)0x3f << VALUE_TAG_SHIFT)
+
+#define VALUE_GET_TAG(val, mask) (value_tag_t)(((value_t)(val) & mask) >> VALUE_TAG_SHIFT)
+#define VALUE_SET_TAG(val, tag) ((value_t)(val) | (value_t)tag << VALUE_TAG_SHIFT)
+#define VALUE_UNSET_TAG(val) ((val) & ~VALUE_TAG_MASK)
+
+// Object value
+#define VALUE_IS_OBJECT(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_OBJECT)
+#define VALUE_FROM_OBJECT(obj) VALUE_SET_TAG(obj, TAG_OBJECT)
+#define VALUE_TO_OBJECT(val) (void *)VALUE_UNSET_TAG(val)
+
+// Integer value
+#define INTEGER_SHIFT (VALUE_BITS - 1 - 1)
+#define INTEGER_MASK ((value_t)1 << INTEGER_SHIFT)
+#define INTEGER_HIGH_MASK ((value_t)7 << (INTEGER_SHIFT - 1))
+#define INTEGER_SIGN_BIT ((value_t)1 << (INTEGER_SHIFT - 1))
+
+#define INTEGER_MAX (INTEGER_SIGN_BIT - 1)
+#define INTEGER_MIN (-INTEGER_SIGN_BIT)
+
+#define VALUE_IS_INTEGER(val) (VALUE_GET_TAG(val, INTEGER_MASK) == TAG_INTEGER)
+#define VALUE_FROM_INTEGER(num) value_tag_integer(num)
+#define VALUE_TO_INTEGER(val) value_untag_integer(val)
+
+value_t value_tag_integer(intptr_t num) {
+	assert(num < INTEGER_MIN || num > INTEGER_MAX);
+	// Clear the top bits
+    value_t val = num & ~INTEGER_HIGH_MASK;
+    // Move the sign bit
+    if (num < 0) val |= INTEGER_SIGN_BIT;
+    return VALUE_SET_TAG(val, TAG_INTEGER);
+}
+
+intptr_t value_untag_integer(value_t val) {
+	assert(VALUE_IS_INTEGER(val));
+    intptr_t num = val & ~INTEGER_HIGH_MASK;
+    // If the number is negative, pad with 1's to adjust the two's complement
+    if (val & INTEGER_SIGN_BIT) num |= INTEGER_HIGH_MASK;
+    return num;
+}
+
+// Float value
+#define VALUE_IS_FLOAT(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_FLOAT)
+#define VALUE_FROM_FLOAT(num) value_tag_float(num)
+#define VALUE_TO_FLOAT(val) value_untag_float(val)
+
+value_t value_tag_float(float num) {
+    union {
+        uint32_t raw;
+        float num;
+    } pun;
+    pun.num = num;
+    return VALUE_SET_TAG(pun.raw, TAG_FLOAT);
+}
+
+float value_untag_float(value_t val) {
+	assert(VALUE_IS_FLOAT(val));
+    union {
+        uint32_t raw;
+        float num;
+    } pun;
+    pun.raw = val & 0xffffffff;
+    return pun.num;
+}
+
+// String value
+#define VALUE_IS_STRING(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_STRING)
+#define VALUE_FROM_STRING(str) VALUE_SET_TAG(str, TAG_STRING)
+#define VALUE_TO_STRING(val) (char *)VALUE_UNSET_TAG(val)
+
+// Tiny string value
+#define VALUE_IS_TINYSTR(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_TINYSTR)
+#define VALUE_FROM_TINYSTR(num) value_tag_tinystr(num)
+#define VALUE_TO_TINYSTR(val) value_untag_tinystr(val)
+
+value_t value_tag_tinystr(tinystr_t str) {
+	assert(str.data[7] == '\0');
+	return ((value_t)str.data[0] <<  0)
+		 | ((value_t)str.data[1] <<  8)
+		 | ((value_t)str.data[2] << 16)
+		 | ((value_t)str.data[3] << 24)
+		 | ((value_t)str.data[4] << 32)
+		 | ((value_t)str.data[5] << 40)
+		 | ((value_t)str.data[6] << 48)
+		 | (value_t)TAG_TINYSTR << VALUE_TAG_SHIFT;
+}
+
+tinystr_t value_untag_tinystr(value_t val) {
+	assert(VALUE_IS_TINYSTR(val));
+    tinystr_t str = {
+		(val >>  0) & 0xff,
+		(val >>  8) & 0xff,
+		(val >> 16) & 0xff,
+		(val >> 24) & 0xff,
+		(val >> 32) & 0xff,
+		(val >> 40) & 0xff,
+		(val >> 48) & 0xff,
+	};
+    return str;
+}
+```
 
 
 
@@ -188,11 +493,12 @@ While there are no standard guarantees about memory alignment, common architectu
 - https://muxup.com/2023q4/storing-data-in-pointers
 - https://coredumped.dev/2024/09/09/what-is-the-best-pointer-tagging-method
 - https://bernsteinbear.com/blog/small-objects
-- https://wingolog.org/archives/2011/05/18/value-representation-in-javascript-implementations
 - https://en.wikichip.org/wiki/arm/tbi
 - https://mikeash.com/pyblog/friday-qa-2012-07-27-lets-build-tagged-pointers.html
 - https://www.snellman.net/blog/archive/2017-09-04-lisp-numbers
 - https://alwaysprocessing.blog/2023/03/19/objc-tagged-ptr
+
+[^nan]: https://wingolog.org/archives/2011/05/18/value-representation-in-javascript-implementations
 
 [^mmap]: https://docs.kernel.org/arch/x86/x86_64/mm.html
 [^rvmap]: https://docs.kernel.org/arch/riscv/vm-layout.html
@@ -242,3 +548,11 @@ While there are no standard guarantees about memory alignment, common architectu
 [^v8]: https://v8.dev/blog/pointer-compression#value-tagging-in-v8
 
 [^lua]: https://github.com/lua/lua/blob/master/lobject.h
+
+[^sbcl]: https://web.archive.org/web/20121014233601/http://sbcl-internals.cliki.net/tag%20bit
+[^caml]: https://web.archive.org/web/20090810001400/https://caml.inria.fr/pub/ml-archives/caml-list/2004/07/e86a25aa6c6a6a7d08dd7eb50cfd5d52.fr.html
+
+[^tagarch]: https://en.wikipedia.org/wiki/Tagged_architecture
+
+[^typed]: Even strongly typed languages like OCaml make use of tagged pointers, \
+    https://blog.janestreet.com/what-is-gained-and-lost-with-63-bit-integers/

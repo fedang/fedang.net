@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "lowbits.c"
+//#include "lowbits.c"
 //#include "highbits.c"
-//#include "union.c"
+#include "union.c"
 
 void print_binary(value_t v) {
     const size_t n = sizeof(value_t) / sizeof(uintptr_t);
