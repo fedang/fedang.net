@@ -14,10 +14,10 @@ that can reduce memory footprint and boost performance.
 Despite having a widespread usage and long history[^tagarch],
 pointer tagging remains a relatively obscure topic.
 That's because most of its applications are very low level,
-such as operating systems and programming language interpreters.
+in operating systems and programming language interpreters.
 
-We will look behind the scenes, analyzing and implementing them,
-with a focus on applications in language development.
+We will look behind the scenes, analyzing and implementing this technique,
+with a focus on its uses in language development.
 
 ## Preliminary theory
 
@@ -239,10 +239,16 @@ This is particularly used in languages where double is the dominant number type[
 
 The V8 JavaScript engine uses **pointer compression**[^v8].
 Instead of using real addresses, all the allocations are represented by 32-bit offsets in a 4 GiB heap.
-By *compressing* the pointer size, the memory footprint is reduced by up to 40%.
+By *compressing* the pointer size, the memory footprint can be reduced by up to 40%.
 
 
 ## Tagged union implementation
+
+After all this theory and considerations, we can finally move on to the implementation.
+But before delving into the pointer tagging techniques we just described,
+let's start from the tagged union representation.
+The implementation will be fairly trivial, but it will introduce the value types and
+coding style that we will use from now on.
 
 
 ```c
