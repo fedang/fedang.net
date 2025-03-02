@@ -44,6 +44,7 @@ int main() {
             print_binary(v);
             puts("");
 
+            assert(VALUE_IS_INTEGER(v));
 			assert(ls[i] == VALUE_TO_INTEGER(v));
 		}
 	}
@@ -60,6 +61,7 @@ int main() {
             print_binary(v);
             puts("");
 
+            assert(VALUE_IS_FLOAT(v));
 			assert(ls[i] == VALUE_TO_FLOAT(v));
 		}
 	}

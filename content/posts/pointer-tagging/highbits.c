@@ -10,11 +10,11 @@ typedef struct {
 
 // Only the integer tag sets the highest bit
 typedef enum {
-    TAG_OBJECT  = 0,	// 0b000000
-    TAG_INTEGER = 0x20,	// 0b100000
-    TAG_FLOAT   = 2,	// 0b000010
-    TAG_STRING  = 3,	// 0b000011
-	TAG_TINYSTR = 4,	// 0b000100
+    TAG_OBJECT  = 0,	// 0b_000000
+    TAG_INTEGER = 0x40,	// 0b1000000
+    TAG_FLOAT   = 2,	// 0b_000010
+    TAG_STRING  = 3,	// 0b_000011
+	TAG_TINYSTR = 4,	// 0b_000100
 } value_tag_t;
 
 typedef uintptr_t value_t;
@@ -34,9 +34,9 @@ typedef uintptr_t value_t;
 #define VALUE_TO_OBJECT(val) (void *)VALUE_UNSET_TAG(val)
 
 // Integer value
-#define INTEGER_SHIFT (VALUE_BITS - 1 - 1)
+#define INTEGER_SHIFT (VALUE_BITS - 1)
 #define INTEGER_MASK ((value_t)1 << INTEGER_SHIFT)
-#define INTEGER_HIGH_MASK ((value_t)7 << (INTEGER_SHIFT - 1))
+#define INTEGER_HIGH_MASK ((value_t)3 << (INTEGER_SHIFT - 1))
 #define INTEGER_SIGN_BIT ((value_t)1 << (INTEGER_SHIFT - 1))
 
 #define INTEGER_MAX (INTEGER_SIGN_BIT - 1)
