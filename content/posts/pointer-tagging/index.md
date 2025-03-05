@@ -30,7 +30,7 @@ While this could be the case for older or embedded systems, modern ones won't al
 Consequently, some of the bits in a pointer will be unused[^addressing].
 
 First, let's see the behaviour of 32-bit architectures (e.g., x86, Arm32).
-They use *32-bit words* (hence their name), and can address up to 4 GB (4 × 1024&sup3; bytes) of memory[^pae].
+They use *32-bit words* (hence their name), and can address up to 4 GB (2 to the 32 bytes) of memory[^pae].
 Since these systems can use all of the 4 gigs, are the bits in the addresses fully utilized? Well, not necessarily.
 
 This is where **alignment** comes into the picture.
@@ -211,9 +211,9 @@ which makes debugging and tracking errors harder.
 
 Now that the obligatory warning is out of the way, let's see some tagged pointers out in the wild.
 
-LLVM implements *PointerIntPair*, which automatically bitmangles the integer into
-the low bits of the pointer. Note that this optimization is applied only when possible and
-for small integer values.
+LLVM implements *PointerIntPair*, which automatically bitmangles an integer into
+the low bits of a pointer. Note that this optimization is applied when possible and
+only for small integer values.
 
 A tagged representation is used by both Caml[^caml] and OCaml[^ocaml], despite being compiled
 and strongly-typed languages.
@@ -250,6 +250,8 @@ let's start from the tagged union representation.
 The implementation will be fairly trivial, but it will introduce the value types and
 coding style that we will use from now on.
 
+Firstly, let's introduce the tags that we are going to use.
+In this case, they are direct translation of the types of value that we can represent.
 
 ```c
 typedef enum {
@@ -257,9 +259,32 @@ typedef enum {
     TAG_INTEGER,
     TAG_FLOAT,
     TAG_STRING,
-	TAG_TINYSTR,
+    TAG_TINYSTR,
 } value_tag_t;
 ```
+
+Object refers to a generic pointer (void pointer) that could be used to store a custom type.
+Integer, float (32-bit), and string (char pointer) are quite self explanatory.
+
+What about `TINYSTR`? We'll see a bonus optimization that is very compatible with
+pointer tagging: *Short String Optimization*.
+This trick consists in using a pointer's bits to store directly the chars of a small string,
+rather than pointing to a heap allocation containing them.
+
+To simplify packing these tiny strings, we'll represent
+them with this type.
+
+```c
+// The last byte must be zero
+typedef struct {
+    char data[8];
+} tinystr_t;
+```
+
+We will allow only strings up to 7 chars to be optimized with SSO,
+but other implementations could be specialized to ASCII chars (7 bits) and store more.
+
+With that out of the way, let's see the union that names this implementation.
 
 ```c
 typedef struct {
@@ -274,67 +299,101 @@ typedef struct {
 } value_t;
 ```
 
-```c
-// The last byte must be zero
-typedef struct {
-	char data[8];
-} tinystr_t;
-```
+As you can see, the value tag is stored together the union of the value types.
+Due to padding, the size of `value_t` will be two words (16 bytes on a 64-bit machine).
+
+To keep all of the implementations we'll see today compatible,
+the operations on the values will be hidden behind macros.
 
 ```c
 #define VALUE_IS_OBJECT(val) ((val).tag == TAG_OBJECT)
-#define VALUE_FROM_OBJECT(obj) ((value_t){ .tag = TAG_OBJECT, .to.object = (void *)(obj) })
+#define VALUE_FROM_OBJECT(obj) ((value_t){ .tag = TAG_OBJECT, \
+                                .to.object = (void *)(obj) })
 #define VALUE_TO_OBJECT(val) ((val).to.object)
 ```
+
+The operation `VALUE_IS_OBJECT` checks if the value has the object tag.
+Similarly, `VALUE_FROM_OBJECT` and `VALUE_TO_OBJECT` are respectively
+used to incapsulate or extract an object from a `value_t`.
+
+```c
+#define VALUE_IS_INTEGER(val) ((val).tag == TAG_INTEGER)
+#define VALUE_FROM_INTEGER(num) ((value_t){ .tag = TAG_INTEGER, \
+                                 .to.integer = (num) })
+#define VALUE_TO_INTEGER(val) ((val).to.integer)
+```
+
+Integers have analogous operations.
+Let's define the maximum and minimum values for our integers.
 
 ```c
 #define INTEGER_MAX INTPTR_MAX
 #define INTEGER_MIN INTPTR_MIN
 ```
 
-```c
-#define VALUE_IS_INTEGER(val) ((val).tag == TAG_INTEGER)
-#define VALUE_FROM_INTEGER(num) ((value_t){ .tag = TAG_INTEGER, .to.integer = (num) })
-#define VALUE_TO_INTEGER(val) ((val).to.integer)
-```
+Right now these limits coincide with the system ones, as we use the `intptr_t` fully.
+But later on we'll have to give up some bits in our representation.
+
+Since you have got the hang of it, these are the operations for the remaining values.
 
 ```c
 #define VALUE_IS_FLOAT(val) ((val).tag == TAG_FLOAT)
-#define VALUE_FROM_FLOAT(num) ((value_t){ .tag = TAG_FLOAT, .to.float_ = (num) })
+#define VALUE_FROM_FLOAT(num) ((value_t){ .tag = TAG_FLOAT, \
+                               .to.float_ = (num) })
 #define VALUE_TO_FLOAT(val) ((val).to.float_)
 ```
 
 ```c
 #define VALUE_IS_STRING(val) ((val).tag == TAG_STRING)
-#define VALUE_FROM_STRING(str) ((value_t){ .tag = TAG_STRING, .to.string = (char *)(str) })
+#define VALUE_FROM_STRING(str) ((value_t){ .tag = TAG_STRING, \
+                                .to.string = (char *)(str) })
 #define VALUE_TO_STRING(val) ((val).to.string)
 ```
 
 ```c
 #define VALUE_IS_TINYSTR(val) ((val).tag == TAG_TINYSTR)
-#define VALUE_FROM_TINYSTR(str) ((value_t){ .tag = TAG_TINYSTR, .to.tinystr = (str) })
+#define VALUE_FROM_TINYSTR(str) ((value_t){ .tag = TAG_TINYSTR, \
+                                 .to.tinystr = (str) })
 #define VALUE_TO_TINYSTR(val) ((val).to.tinystr)
 ```
 
+In this implementation, the tag is not bitmangled and can thus be accessed very fast.
+However, the size overhead is quite detrimental.
+Usually, a tagged union made from two words is passed around using two registers.
+This effectively halves the number of available processor registers and makes
+life harder for optimizing compilers.
+
+
 ## Low bits tagging implementation
+
+It's finally time to implement our tagged pointers.
+We'll start with the low bits technique, as it is slightly superior in both
+performance and compatibility.
+On the other hand, only very few tag bits are usable with this technique.
+
+We need to redefine the tags as specific bit patterns.
 
 ```c
 // Only the integer tag sets the lowest bit
 typedef enum {
-    TAG_OBJECT  = 0,		// 0b000
-    TAG_INTEGER = 1,		// 0b001
-    TAG_FLOAT   = 2,		// 0b010
-    TAG_STRING  = 4,		// 0b100
-	TAG_TINYSTR = 6,		// 0b110
+    TAG_OBJECT  = 0,        // 0b000
+    TAG_INTEGER = 1,        // 0b001
+    TAG_FLOAT   = 2,        // 0b010
+    TAG_STRING  = 4,        // 0b100
+    TAG_TINYSTR = 6,        // 0b110
 } value_tag_t;
 
 typedef uintptr_t value_t;
 ```
 
+This time our `value_t` is simply a `uintptr_t`. Our tags will use at most 3 bits, so
+the pointers need to be aligned to at least 8 bytes.
+Note that the first bit is dedicated to integers.
+
 ```c
 #define VALUE_BITS 64
 #define VALUE_TAG_BITS 3
-#define VALUE_TAG_MASK 7	// 0b111
+#define VALUE_TAG_MASK 7    // 0b111
 
 #define VALUE_GET_TAG(val, mask) (value_tag_t)((value_t)(val) & mask)
 #define VALUE_SET_TAG(val, tag) ((value_t)(val) | tag)
@@ -360,13 +419,13 @@ typedef uintptr_t value_t;
 #define VALUE_TO_INTEGER(val) value_untag_integer(val)
 
 value_t value_tag_integer(intptr_t num) {
-	assert(num < INTEGER_MIN || num > INTEGER_MAX);
-	return (value_t)num << INTEGER_SHIFT | (num & INTEGER_SIGN_BIT) | TAG_INTEGER;
+    assert(num < INTEGER_MIN || num > INTEGER_MAX);
+    return (value_t)num << INTEGER_SHIFT | (num & INTEGER_SIGN_BIT) | TAG_INTEGER;
 }
 
 intptr_t value_untag_integer(value_t val) {
-	assert(VALUE_IS_INTEGER(val));
-	return (intptr_t)val >> INTEGER_SHIFT | (val & INTEGER_SIGN_BIT);
+    assert(VALUE_IS_INTEGER(val));
+    return (intptr_t)val >> INTEGER_SHIFT | (val & INTEGER_SIGN_BIT);
 }
 ```
 
@@ -387,7 +446,7 @@ value_t value_tag_float(float num) {
 }
 
 float value_untag_float(value_t val) {
-	assert(VALUE_IS_FLOAT(val));
+    assert(VALUE_IS_FLOAT(val));
     union {
         uint32_t raw;
         float num;
@@ -409,28 +468,28 @@ float value_untag_float(value_t val) {
 #define VALUE_TO_TINYSTR(val) value_untag_tinystr(val)
 
 value_t value_tag_tinystr(tinystr_t str) {
-	assert(str.data[7] == '\0');
-	return ((value_t)str.data[0] <<  8)
-		 | ((value_t)str.data[1] << 16)
-		 | ((value_t)str.data[2] << 24)
-		 | ((value_t)str.data[3] << 32)
-		 | ((value_t)str.data[4] << 40)
-		 | ((value_t)str.data[5] << 48)
-		 | ((value_t)str.data[6] << 56)
-		 | TAG_TINYSTR;
+    assert(str.data[7] == '\0');
+    return ((value_t)str.data[0] <<  8)
+         | ((value_t)str.data[1] << 16)
+         | ((value_t)str.data[2] << 24)
+         | ((value_t)str.data[3] << 32)
+         | ((value_t)str.data[4] << 40)
+         | ((value_t)str.data[5] << 48)
+         | ((value_t)str.data[6] << 56)
+         | TAG_TINYSTR;
 }
 
 tinystr_t value_untag_tinystr(value_t val) {
-	assert(VALUE_IS_TINYSTR(val));
+    assert(VALUE_IS_TINYSTR(val));
     tinystr_t str = {
-		(val >>  8) & 0xff,
-		(val >> 16) & 0xff,
-		(val >> 24) & 0xff,
-		(val >> 32) & 0xff,
-		(val >> 40) & 0xff,
-		(val >> 48) & 0xff,
-		(val >> 56) & 0xff,
-	};
+        (val >>  8) & 0xff,
+        (val >> 16) & 0xff,
+        (val >> 24) & 0xff,
+        (val >> 32) & 0xff,
+        (val >> 40) & 0xff,
+        (val >> 48) & 0xff,
+        (val >> 56) & 0xff,
+    };
     return str;
 }
 ```
@@ -440,11 +499,11 @@ tinystr_t value_untag_tinystr(value_t val) {
 ```c
 // Only the integer tag sets the highest bit
 typedef enum {
-    TAG_OBJECT  = 0,	// 0b_000000
-    TAG_INTEGER = 0x40,	// 0b1000000
-    TAG_FLOAT   = 2,	// 0b_000010
-    TAG_STRING  = 3,	// 0b_000011
-	TAG_TINYSTR = 4,	// 0b_000100
+    TAG_OBJECT  = 0,    // 0b_000000
+    TAG_INTEGER = 0x40, // 0b1000000
+    TAG_FLOAT   = 2,    // 0b_000010
+    TAG_STRING  = 3,    // 0b_000011
+    TAG_TINYSTR = 4,    // 0b_000100
 } value_tag_t;
 ```
 
@@ -479,8 +538,8 @@ typedef enum {
 #define VALUE_TO_INTEGER(val) value_untag_integer(val)
 
 value_t value_tag_integer(intptr_t num) {
-	assert(num < INTEGER_MIN || num > INTEGER_MAX);
-	// Clear the top bits
+    assert(num < INTEGER_MIN || num > INTEGER_MAX);
+    // Clear the top bits
     value_t val = num & ~INTEGER_HIGH_MASK;
     // Move the sign bit
     if (num < 0) val |= INTEGER_SIGN_BIT;
@@ -488,7 +547,7 @@ value_t value_tag_integer(intptr_t num) {
 }
 
 intptr_t value_untag_integer(value_t val) {
-	assert(VALUE_IS_INTEGER(val));
+    assert(VALUE_IS_INTEGER(val));
     intptr_t num = val & ~INTEGER_HIGH_MASK;
     // If the number is negative, pad with 1's to adjust the two's complement
     if (val & INTEGER_SIGN_BIT) num |= INTEGER_HIGH_MASK;
@@ -511,7 +570,7 @@ value_t value_tag_float(float num) {
 }
 
 float value_untag_float(value_t val) {
-	assert(VALUE_IS_FLOAT(val));
+    assert(VALUE_IS_FLOAT(val));
     union {
         uint32_t raw;
         float num;
@@ -533,28 +592,28 @@ float value_untag_float(value_t val) {
 #define VALUE_TO_TINYSTR(val) value_untag_tinystr(val)
 
 value_t value_tag_tinystr(tinystr_t str) {
-	assert(str.data[7] == '\0');
-	return ((value_t)str.data[0] <<  0)
-		 | ((value_t)str.data[1] <<  8)
-		 | ((value_t)str.data[2] << 16)
-		 | ((value_t)str.data[3] << 24)
-		 | ((value_t)str.data[4] << 32)
-		 | ((value_t)str.data[5] << 40)
-		 | ((value_t)str.data[6] << 48)
-		 | (value_t)TAG_TINYSTR << VALUE_TAG_SHIFT;
+    assert(str.data[7] == '\0');
+    return ((value_t)str.data[0] <<  0)
+         | ((value_t)str.data[1] <<  8)
+         | ((value_t)str.data[2] << 16)
+         | ((value_t)str.data[3] << 24)
+         | ((value_t)str.data[4] << 32)
+         | ((value_t)str.data[5] << 40)
+         | ((value_t)str.data[6] << 48)
+         | (value_t)TAG_TINYSTR << VALUE_TAG_SHIFT;
 }
 
 tinystr_t value_untag_tinystr(value_t val) {
-	assert(VALUE_IS_TINYSTR(val));
+    assert(VALUE_IS_TINYSTR(val));
     tinystr_t str = {
-		(val >>  0) & 0xff,
-		(val >>  8) & 0xff,
-		(val >> 16) & 0xff,
-		(val >> 24) & 0xff,
-		(val >> 32) & 0xff,
-		(val >> 40) & 0xff,
-		(val >> 48) & 0xff,
-	};
+        (val >>  0) & 0xff,
+        (val >>  8) & 0xff,
+        (val >> 16) & 0xff,
+        (val >> 24) & 0xff,
+        (val >> 32) & 0xff,
+        (val >> 40) & 0xff,
+        (val >> 48) & 0xff,
+    };
     return str;
 }
 ```
@@ -566,8 +625,9 @@ I hope you liked this article.
 
 Heed my warning about use.
 
-
-
+All of the implementations were tested on x86_64 and Aarch64 systems.
+Here you can find the full code listing: [union.c]({{< fullpath "union.c" >}}), [lowbits.c]({{< fullpath "lowbits.c" >}}),
+[highbits.c]({{< fullpath "highbits.c" >}}), and [test.c]({{< fullpath "test.c" >}}).
 
 ## References
 - https://muxup.com/2023q4/storing-data-in-pointers
