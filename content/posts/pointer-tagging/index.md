@@ -251,7 +251,7 @@ The implementation will be fairly trivial, but it will introduce the value types
 coding style that we will use from now on.
 
 Firstly, let's introduce the tags that we are going to use.
-In this case, they are direct translation of the types of value that we can represent.
+In our examples, they are direct translations of the types of value that we can represent.
 
 ```c
 typedef enum {
@@ -357,7 +357,8 @@ Since you have got the hang of it, these are the operations for the remaining va
 #define VALUE_TO_TINYSTR(val) ((val).to.tinystr)
 ```
 
-In this implementation, the tag is not bitmangled and can thus be accessed very fast.
+In this implementation, the tag can be accessed very fast
+without any further operation (shift/masking).
 However, the size overhead is quite detrimental.
 Usually, a tagged union made from two words is passed around using two registers.
 This effectively halves the number of available processor registers and makes
