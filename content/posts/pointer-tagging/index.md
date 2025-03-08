@@ -1,9 +1,8 @@
 +++
 title = 'Theory and implementation of tagged pointers'
-date = 2025-02-14T13:58:39+01:00
+date = 2025-03-09
 categories = [ "langdev", "deep-dive", "low-level" ]
 tags = [ "low-level", "memory", "optimization", "langdev", "interpreter" ]
-draft = true
 +++
 
 Let's explore **tagged pointers**, a clever optimization
@@ -766,6 +765,9 @@ get in touch with me at *{{< email "main@fedang.net" >}}*.
 - https://simonsafar.com/2020/sbcl
 - *Representing Type Information in Dinamically Typed Languages* \
     https://www.cs.arizona.edu/sites/default/files/TR93-27.pdf
+- https://squoze.org
+- https://clementbera.wordpress.com/2018/11/09/64-bits-immediate-floats/
+
 
 [^taglisp]: https://www.snellman.net/blog/archive/2017-09-04-lisp-numbers
 [^lispmach]: https://en.wikipedia.org/wiki/Lisp_machine

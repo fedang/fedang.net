@@ -1,3 +1,7 @@
+// Copyright (c) 2025 Federico Angelilli
+// Licensed under the 3-Clause BSD License
+// See fedang.net/posts/pointer-tagging
+
 #include <stdio.h>
 #include <stdlib.h>
 
