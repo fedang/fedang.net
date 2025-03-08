@@ -1,7 +1,7 @@
 +++
 title = 'Theory and implementation of tagged pointers'
 date = 2025-02-14T13:58:39+01:00
-categories = [ "langdev", "guide", "low-level" ]
+categories = [ "langdev", "deep-dive", "low-level" ]
 tags = [ "low-level", "memory", "optimization", "langdev", "interpreter" ]
 draft = true
 +++
@@ -11,9 +11,9 @@ that can reduce memory footprint and boost performance.
 
 <!--more-->
 
-Despite having a widespread usage and long history[^tagarch],
+Despite having widespread usage and a long history[^tagarch],
 pointer tagging remains a relatively obscure topic.
-That's because most of its applications are very low level,
+That's because most of its applications are very low-level,
 in operating systems and programming language interpreters.
 
 We will look behind the scenes, analyzing and implementing this technique,
@@ -23,14 +23,14 @@ with a focus on its uses in language development.
 
 Let's start with the term *pointer*, which I'll use to refer to actual **memory addresses**.
 Going forward, I will assume these to be represented as a word-sized integer.
-All possible pointer values (2 to the power of the bits in a word) form the *virtual address space*.
+All possible pointer values (2 elevated to the number of bits in a word) form the *virtual address space*.
 
 In principle, all of these addresses are valid and potentially used.
 While this could be the case for older or embedded systems, modern ones won't allocate certain ranges.
 Consequently, some of the bits in a pointer will be unused[^addressing].
 
-First, let's see the behaviour of 32-bit architectures (e.g., x86, Arm32).
-They use *32-bit words* (hence their name), and can address up to 4 GB (2 to the 32 bytes) of memory[^pae].
+First, let's see the behavior of 32-bit architectures (e.g., x86, Arm32).
+They use *32-bit words* (hence their name), and can address up to 4 GB (2^32 bytes) of memory[^pae].
 Since these systems can use all of the 4 gigs, are the bits in the addresses fully utilized? Well, not necessarily.
 
 This is where **alignment** comes into the picture.
@@ -39,7 +39,7 @@ These unaligned accesses can cause performance problems (multiple reads may be e
 
 To prevent this, compilers insert padding to align values according to their types' alignment (which can be queried with `alignof`).
 These alignment requirements are specified in an *Application Binary Interface* and are thus platform-dependent.
-For example, the current Linux ABI guarantees the stack to be 16 bytes aligned[^abi].
+For example, the current Linux ABI guarantees the stack to be 16-byte aligned[^abi].
 
 Similar conventions are also adopted by system libraries.
 Memory allocated with `malloc` is aligned to 8 bytes (16 on 64-bit systems) by both glibc[^malloc] and MSVCRT[^msalloc].
@@ -72,7 +72,7 @@ Linux 4.14 added support for 5-level paging, which allows *57-bit virtual addres
 Everything said above applies, but for bit 56 instead of 47.
 By default, addresses above 47-bit will not be allocated for user space[^page5].
 
-An Intel extension called *Linear Address Masking*, ignores the high bits of pointers[^lam], avoiding explicit masking.
+An Intel extension, called *Linear Address Masking*, ignores the high bits of pointers[^lam], avoiding explicit masking.
 The most significant bit is reserved for kernel use, allowing metadata in bits 62:57 (or 62:48 in `LAM_U48` mode).
 
 A similar feature from AMD called *Upper Address Ignore* has not been added to the kernel due to
@@ -201,7 +201,7 @@ This is less problematic for language interpreters, since they frequently
 require wrappers for libraries anyway.
 
 There is the risk of using a library that has its own tags for pointers, which
-could cause all kinds of unintended behaviour.
+could cause all kinds of unintended behavior.
 In general, pointers from other sources are a security risk as they could be tagged incorrectly.
 
 We also cannot ignore the complexity introduced by pointer tagging,
@@ -387,53 +387,124 @@ typedef enum {
 typedef uintptr_t value_t;
 ```
 
-This time our `value_t` is simply a `uintptr_t`. Our tags will use at most 3 bits, so
+Now our `value_t` is simply a `uintptr_t`. Our tags will use at most 3 bits, so
 the pointers need to be aligned to at least 8 bytes.
-Note that the first bit is dedicated to integers.
+Note that the first bit is dedicated to integers (more about that later).
+
+For good measure, let's add some constants that will come in handy later on.
 
 ```c
 #define VALUE_BITS 64
 #define VALUE_TAG_BITS 3
 #define VALUE_TAG_MASK 7    // 0b111
+```
 
-#define VALUE_GET_TAG(val, mask) (value_tag_t)((value_t)(val) & mask)
+The first two values are self-explanatory and `VALUE_TAG_MASK` is simply
+a 3-bit mask that we can use to retrieve the tags.
+
+We'll incapsulate the bit operations in these macros to make our life easier.
+
+```c
+#define VALUE_GET_TAG(val, mask) \
+    (value_tag_t)((value_t)(val) & mask)
+
+#define VALUE_HAS_TAG(val, tag) \
+    (VALUE_GET_TAG(val, VALUE_TAG_MASK) == (value_tag_t)(tag))
+
 #define VALUE_SET_TAG(val, tag) ((value_t)(val) | tag)
+
 #define VALUE_UNSET_TAG(val) ((val) & ~VALUE_TAG_MASK)
 ```
 
+To get the tag we apply a mask to the value in `VALUE_GET_TAG`,
+while in `VALUE_HAS_TAG` the given tag is compared with the retrieved one.
+`VALUE_SET_TAG` simply ORs the tag and the value.
+Lastly, `VALUE_UNSET_TAG` clears the bits of the mask.
+
+Like before, operations on values with `TAG_OBJECT` is quite straightforward.
+
 ```c
-#define VALUE_IS_OBJECT(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_OBJECT)
+#define VALUE_IS_OBJECT(val) VALUE_HAS_TAG(val, TAG_OBJECT)
 #define VALUE_FROM_OBJECT(obj) VALUE_SET_TAG(obj, TAG_OBJECT)
 #define VALUE_TO_OBJECT(val) (void *)VALUE_UNSET_TAG(val)
 ```
+
+Let's move onto integers, which this time are a bit more complex :wink:.
+As I mentioned before, we dedicated the lowest bit to integers.
+This means that we can tell apart integer values just by checking
+if the first bit is set.
+
+To do this, we need to define a different mask for the first bit.
 
 ```c
 #define INTEGER_SHIFT 1
 #define INTEGER_MASK 1
 #define INTEGER_SIGN_BIT ((value_t)1 << (VALUE_BITS - 1))
+```
 
-#define INTEGER_MAX (((value_t)1 << (VALUE_BITS - 1 - INTEGER_SHIFT)) - 1)
-#define INTEGER_MIN -((value_t)1 << (VALUE_BITS - 1 - INTEGER_SHIFT))
+`INTEGER_SHIFT` is the amount of bits the integer values are shifted when tagged.
+`INTEGER_SIGN_BIT` is the most significant bit, which is used to store the sign
+of integers.
 
-#define VALUE_IS_INTEGER(val) (VALUE_GET_TAG(val, INTEGER_MASK) == TAG_INTEGER)
+By using the first bit for the tagging, we reduce the range of values representable
+by our integers.
+
+```c
+#define INTEGER_MAX \
+    (((value_t)1 << (VALUE_BITS - 1 - INTEGER_SHIFT)) - 1)
+
+#define INTEGER_MIN \
+    -((value_t)1 << (VALUE_BITS - 1 - INTEGER_SHIFT))
+```
+
+Concretely, our  63-bit integers can represent numbers from `4611686018427387903`
+to `-4611686018427387904`.
+Many languages offer some kind of bignum[^bignum] to address the lack of the full 64-bit range.
+
+For the tagging and untagging of integers things get a little complicated,
+so let's make two small helper functions.
+In a real situation these should be inlined.
+
+```c
+#define VALUE_IS_INTEGER(val) \
+    (VALUE_GET_TAG(val, INTEGER_MASK) == TAG_INTEGER)
+
 #define VALUE_FROM_INTEGER(num) value_tag_integer(num)
 #define VALUE_TO_INTEGER(val) value_untag_integer(val)
 
 value_t value_tag_integer(intptr_t num) {
     assert(num < INTEGER_MIN || num > INTEGER_MAX);
-    return (value_t)num << INTEGER_SHIFT | (num & INTEGER_SIGN_BIT) | TAG_INTEGER;
+    return (value_t)num << INTEGER_SHIFT
+         | (num & INTEGER_SIGN_BIT) | TAG_INTEGER;
 }
 
 intptr_t value_untag_integer(value_t val) {
     assert(VALUE_IS_INTEGER(val));
-    return (intptr_t)val >> INTEGER_SHIFT | (val & INTEGER_SIGN_BIT);
+    return (intptr_t)val >> INTEGER_SHIFT
+         | (val & INTEGER_SIGN_BIT);
 }
 ```
+
+`VALUE_IS_INTEGER` simply masks the lowest bit and tests if we have a `TAG_INTEGER`.
+It's very important to check if a value is an integer, **before** testing for other tags!
+Since integers use a shorter mask, applying `VALUE_TAG_MASK` to an integer will yield
+extraneous bits in the tag.
+
+In `value_tag_integer` the number is shifted to the left by 1 and ORed with the tag.
+Then, if the sign bit was set, it gets ORed back again.
+This last step preserves the sign of the number.
+
+Correspondingly, `value_untag_integer` shifts the value to the right by 1.
+If the highest bit of the value was set, the resulting integer is ORed with `INTEGER_SIGN_BIT`.
+
+For floats, we will use a similar, albeit much simpler, strategy.
+The reason we are not using `double` is because it's non-trivial to truncate bits from it.
+On the other hand, a `float` is just 32 bits and fits nicely in our 64-bit pointers.
 
 ```c
 #define FLOAT_SHIFT 31
 
-#define VALUE_IS_FLOAT(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_FLOAT)
+#define VALUE_IS_FLOAT(val) VALUE_HAS_TAG(val, TAG_FLOAT)
 #define VALUE_FROM_FLOAT(num) value_tag_float(num)
 #define VALUE_TO_FLOAT(val) value_untag_float(val)
 
@@ -457,14 +528,26 @@ float value_untag_float(value_t val) {
 }
 ```
 
+In `value_tag_float` we make use of a union to type-pun[^punning] the `float` into a `uint32_t`.
+Then, the punned integer is shifted to the left by 31 and is tagged.
+
+Conversely, in `value_untag_float` the value gets shifted to the right and masked to get the bottom 32 bits.
+The type punning is repeated to get the float back.
+
+Values with `TAG_STRING` behave just like the objects we have seen before.
+
 ```c
-#define VALUE_IS_STRING(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_STRING)
+#define VALUE_IS_STRING(val) VALUE_HAS_TAG(val, TAG_STRING)
 #define VALUE_FROM_STRING(str) VALUE_SET_TAG(str, TAG_STRING)
 #define VALUE_TO_STRING(val) (char *)VALUE_UNSET_TAG(val)
 ```
 
+Tiny strings are more interesting.
+We use a helper function to tag them by left shifting and ORing together the chars.
+The inverse operation consists of right shifting and masking.
+
 ```c
-#define VALUE_IS_TINYSTR(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_TINYSTR)
+#define VALUE_IS_TINYSTR(val) VALUE_HAS_TAG(val, TAG_TINYSTR)
 #define VALUE_FROM_TINYSTR(num) value_tag_tinystr(num)
 #define VALUE_TO_TINYSTR(val) value_untag_tinystr(val)
 
@@ -495,7 +578,24 @@ tinystr_t value_untag_tinystr(value_t val) {
 }
 ```
 
+What are the characteristics of this implementation?
+Since accessing the tag and value requires bitwise operations, a tagged union
+is slightly more performant.
+However, the difference is negligible in practice.
+A valid concern is that the number of bits we can use for tags is very limited.
+
+But as we have seen previously, there are many benefits to using a single tagged pointer.
+
+
 ## High bits tagging implementation
+
+The implementation using high bits is really similar to the one we just saw.
+As such, lines that didn't change won't be included.
+
+Like before, let's start from adjusting our `value_tag_t` bits.
+Integers will have the highest 7th bit dedicated, while
+all other values will be within 6 bits.
+This trick will allow us to have 63-bit integers.
 
 ```c
 // Only the integer tag sets the highest bit
@@ -508,59 +608,71 @@ typedef enum {
 } value_tag_t;
 ```
 
+For the tag, we'll use the bits that we discussed during theory (62:57).
+We'll shift the value `0x3f` (`0b111111`) and use it as the mask.
+
 ```c
-#define VALUE_BITS 64
 #define VALUE_TAG_BITS 6
 #define VALUE_TAG_SHIFT (VALUE_BITS - 1 - VALUE_TAG_BITS)
 #define VALUE_TAG_MASK ((value_t)0x3f << VALUE_TAG_SHIFT)
-
-#define VALUE_GET_TAG(val, mask) (value_tag_t)(((value_t)(val) & mask) >> VALUE_TAG_SHIFT)
-#define VALUE_SET_TAG(val, tag) ((value_t)(val) | (value_t)tag << VALUE_TAG_SHIFT)
-#define VALUE_UNSET_TAG(val) ((val) & ~VALUE_TAG_MASK)
 ```
 
-```c
-#define VALUE_IS_OBJECT(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_OBJECT)
-#define VALUE_FROM_OBJECT(obj) VALUE_SET_TAG(obj, TAG_OBJECT)
-#define VALUE_TO_OBJECT(val) (void *)VALUE_UNSET_TAG(val)
-```
+The helper macros to get and set the tag are tweaked a bit
+to account for the shifted tags.
 
 ```c
-#define INTEGER_SHIFT (VALUE_BITS - 1)
-#define INTEGER_MASK ((value_t)1 << INTEGER_SHIFT)
-#define INTEGER_HIGH_MASK ((value_t)3 << (INTEGER_SHIFT - 1))
-#define INTEGER_SIGN_BIT ((value_t)1 << (INTEGER_SHIFT - 1))
+#define VALUE_GET_TAG(val, mask) \
+    (value_tag_t)(((value_t)(val) & mask) >> VALUE_TAG_SHIFT)
+
+#define VALUE_SET_TAG(val, tag) \
+    ((value_t)(val) | (value_t)tag << VALUE_TAG_SHIFT)
+```
+
+Object and string values are the same as before.
+
+For integers, we'll use the highest bit to mark them.
+The sign bit will be moved down to bit 62.
+
+```c
+#define INTEGER_MASK ((value_t)1 << (VALUE_BITS - 1))
+#define INTEGER_SIGN_BIT ((value_t)1 << (VALUE_BITS - 2))
 
 #define INTEGER_MAX (INTEGER_SIGN_BIT - 1)
 #define INTEGER_MIN (-INTEGER_SIGN_BIT)
+```
 
-#define VALUE_IS_INTEGER(val) (VALUE_GET_TAG(val, INTEGER_MASK) == TAG_INTEGER)
-#define VALUE_FROM_INTEGER(num) value_tag_integer(num)
-#define VALUE_TO_INTEGER(val) value_untag_integer(val)
+As for the range, we still have 63-bit integers like the previous implementation.
 
+
+```c
 value_t value_tag_integer(intptr_t num) {
-    assert(num < INTEGER_MIN || num > INTEGER_MAX);
-    // Clear the top bits
-    value_t val = num & ~INTEGER_HIGH_MASK;
+	assert(num < INTEGER_MIN || num > INTEGER_MAX);
+	// Clear the top bits
+    value_t val = num & ~(INTEGER_MASK | INTEGER_SIGN_BIT);
     // Move the sign bit
     if (num < 0) val |= INTEGER_SIGN_BIT;
     return VALUE_SET_TAG(val, TAG_INTEGER);
 }
 
 intptr_t value_untag_integer(value_t val) {
-    assert(VALUE_IS_INTEGER(val));
-    intptr_t num = val & ~INTEGER_HIGH_MASK;
-    // If the number is negative, pad with 1's to adjust the two's complement
-    if (val & INTEGER_SIGN_BIT) num |= INTEGER_HIGH_MASK;
+	assert(VALUE_IS_INTEGER(val));
+    intptr_t num = val;
+    // If the number is negative, leave the top 1's for the two's complement
+    if (!(val & INTEGER_SIGN_BIT)) num &= ~INTEGER_MASK;
     return num;
 }
 ```
 
-```c
-#define VALUE_IS_FLOAT(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_FLOAT)
-#define VALUE_FROM_FLOAT(num) value_tag_float(num)
-#define VALUE_TO_FLOAT(val) value_untag_float(val)
+In this version of `value_tag_integer` the number gets cleared of its top 2 bits.
+If the sign is negative, the value gets ORed with the sign bit.
+Then, the value is tagged and returned.
 
+To preserve the two's complement, `value_untag_integer` clears the tag bit
+only if the number is positive (thus `INTEGER_SIGN_BIT` is not set).
+
+This time, tagging floats is slightly easier since we don't any shift.
+
+```c
 value_t value_tag_float(float num) {
     union {
         uint32_t raw;
@@ -581,17 +693,11 @@ float value_untag_float(value_t val) {
 }
 ```
 
-```c
-#define VALUE_IS_STRING(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_STRING)
-#define VALUE_FROM_STRING(str) VALUE_SET_TAG(str, TAG_STRING)
-#define VALUE_TO_STRING(val) (char *)VALUE_UNSET_TAG(val)
-```
+For tiny string there is a slight difference in the shifting order.
+We are packing the chars from the 1st to the 7th byte,
+while before it was from the 2nd byte to the 8th.
 
 ```c
-#define VALUE_IS_TINYSTR(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_TINYSTR)
-#define VALUE_FROM_TINYSTR(num) value_tag_tinystr(num)
-#define VALUE_TO_TINYSTR(val) value_untag_tinystr(val)
-
 value_t value_tag_tinystr(tinystr_t str) {
     assert(str.data[7] == '\0');
     return ((value_t)str.data[0] <<  0)
@@ -619,16 +725,34 @@ tinystr_t value_untag_tinystr(value_t val) {
 }
 ```
 
+As compared to the low bits technique, this one has more available bits and
+similar (un)tagging performance.
+Also, no allocation alignment guarantees are needed.
+
+However, there is a problem with this approach: it's not completely future-proof.
+We are still a long way from using the full 64 bits for addressing,
+but it's not the first time that something similar happened[^mac24].
+
 
 ## Conclusion
 
-I hope you liked this article.
+We are finally done with the implementations!
 
-Heed my warning about use.
+I hope you found this deep dive interesting and insightful.
+I went into as many details as I could and the article ended up being lengthy.
+Despite that, there is still much more to say.
+If you like this topic, you can start with the references.
 
-All of the implementations were tested on x86_64 and Aarch64 systems.
+Now, you should have a good understanding of how addresses are handled,
+and how we can take advantage of that in an interpreter.
+Nevertheless, heed my warning and don't sprinkle tagged pointers everywhere.
+
+All the implementations were tested on x86_64 and Aarch64 systems.
 Here you can find the full code listing: [union.c]({{< fullpath "union.c" >}}), [lowbits.c]({{< fullpath "lowbits.c" >}}),
 [highbits.c]({{< fullpath "highbits.c" >}}), and [test.c]({{< fullpath "test.c" >}}).
+
+If you have any questions or would like to report a mistake,
+get in touch with me at *{{< email "main@fedang.net" >}}*.
 
 ## References
 - https://muxup.com/2023q4/storing-data-in-pointers
@@ -640,6 +764,8 @@ Here you can find the full code listing: [union.c]({{< fullpath "union.c" >}}), 
 - https://piotrduperas.com/posts/nan-boxing
 - https://www.linaro.org/blog/type-tracking-using-arm-memory-tagging
 - https://simonsafar.com/2020/sbcl
+- *Representing Type Information in Dinamically Typed Languages* \
+    https://www.cs.arizona.edu/sites/default/files/TR93-27.pdf
 
 [^taglisp]: https://www.snellman.net/blog/archive/2017-09-04-lisp-numbers
 [^lispmach]: https://en.wikipedia.org/wiki/Lisp_machine
@@ -711,3 +837,9 @@ Here you can find the full code listing: [union.c]({{< fullpath "union.c" >}}), 
 [^llvm]: https://github.com/llvm/llvm-project/blob/3bd3e06f3fe418e24af65457877f40cee0544f9d/llvm/include/llvm/ADT/PointerIntPair.h#L64
 
 [^linux5page]: https://lwn.net/Articles/717293
+
+[^bignum]: https://en.wikipedia.org/wiki/Arbitrary-precision_arithmetic
+[^punning]: https://en.wikipedia.org/wiki/Type_punning#Use_of_union
+
+[^mac24]: *Transitioning from 24-bit to 32-bit Addressing*, \
+    https://macgui.com/news/article.php?t=527

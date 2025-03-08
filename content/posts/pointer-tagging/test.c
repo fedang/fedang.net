@@ -35,7 +35,7 @@ int main() {
 	// Integer
 	{
 		intptr_t ls[] = {
-			-1, 10, 1000000, INTEGER_MAX, INTEGER_MIN, 424242
+			-1, 10, 1000000, INTEGER_MAX, INTEGER_MIN, 424242, -10000
 		};
 
 		for (int i = 0; i < sizeof(ls)/sizeof(*ls); i++) {

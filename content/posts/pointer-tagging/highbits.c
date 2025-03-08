@@ -25,19 +25,18 @@ typedef uintptr_t value_t;
 #define VALUE_TAG_MASK ((value_t)0x3f << VALUE_TAG_SHIFT)
 
 #define VALUE_GET_TAG(val, mask) (value_tag_t)(((value_t)(val) & mask) >> VALUE_TAG_SHIFT)
+#define VALUE_HAS_TAG(val, tag) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == (value_tag_t)(tag))
 #define VALUE_SET_TAG(val, tag) ((value_t)(val) | (value_t)tag << VALUE_TAG_SHIFT)
 #define VALUE_UNSET_TAG(val) ((val) & ~VALUE_TAG_MASK)
 
 // Object value
-#define VALUE_IS_OBJECT(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_OBJECT)
+#define VALUE_IS_OBJECT(val) VALUE_HAS_TAG(val, TAG_OBJECT)
 #define VALUE_FROM_OBJECT(obj) VALUE_SET_TAG(obj, TAG_OBJECT)
 #define VALUE_TO_OBJECT(val) (void *)VALUE_UNSET_TAG(val)
 
 // Integer value
-#define INTEGER_SHIFT (VALUE_BITS - 1)
-#define INTEGER_MASK ((value_t)1 << INTEGER_SHIFT)
-#define INTEGER_HIGH_MASK ((value_t)3 << (INTEGER_SHIFT - 1))
-#define INTEGER_SIGN_BIT ((value_t)1 << (INTEGER_SHIFT - 1))
+#define INTEGER_MASK ((value_t)1 << (VALUE_BITS - 1))
+#define INTEGER_SIGN_BIT ((value_t)1 << (VALUE_BITS - 2))
 
 #define INTEGER_MAX (INTEGER_SIGN_BIT - 1)
 #define INTEGER_MIN (-INTEGER_SIGN_BIT)
@@ -49,7 +48,7 @@ typedef uintptr_t value_t;
 value_t value_tag_integer(intptr_t num) {
 	assert(num < INTEGER_MIN || num > INTEGER_MAX);
 	// Clear the top bits
-    value_t val = num & ~INTEGER_HIGH_MASK;
+    value_t val = num & ~(INTEGER_MASK | INTEGER_SIGN_BIT);
     // Move the sign bit
     if (num < 0) val |= INTEGER_SIGN_BIT;
     return VALUE_SET_TAG(val, TAG_INTEGER);
@@ -57,14 +56,14 @@ value_t value_tag_integer(intptr_t num) {
 
 intptr_t value_untag_integer(value_t val) {
 	assert(VALUE_IS_INTEGER(val));
-    intptr_t num = val & ~INTEGER_HIGH_MASK;
-    // If the number is negative, pad with 1's to adjust the two's complement
-    if (val & INTEGER_SIGN_BIT) num |= INTEGER_HIGH_MASK;
+    intptr_t num = val;
+    // If the number is negative, leave the top 1's for the two's complement
+    if (!(val & INTEGER_SIGN_BIT)) num &= ~INTEGER_MASK;
     return num;
 }
 
 // Float value
-#define VALUE_IS_FLOAT(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_FLOAT)
+#define VALUE_IS_FLOAT(val) VALUE_HAS_TAG(val, TAG_FLOAT)
 #define VALUE_FROM_FLOAT(num) value_tag_float(num)
 #define VALUE_TO_FLOAT(val) value_untag_float(val)
 
@@ -88,12 +87,12 @@ float value_untag_float(value_t val) {
 }
 
 // String value
-#define VALUE_IS_STRING(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_STRING)
+#define VALUE_IS_STRING(val) VALUE_HAS_TAG(val, TAG_STRING)
 #define VALUE_FROM_STRING(str) VALUE_SET_TAG(str, TAG_STRING)
 #define VALUE_TO_STRING(val) (char *)VALUE_UNSET_TAG(val)
 
 // Tiny string value
-#define VALUE_IS_TINYSTR(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_TINYSTR)
+#define VALUE_IS_TINYSTR(val) VALUE_HAS_TAG(val, TAG_TINYSTR)
 #define VALUE_FROM_TINYSTR(num) value_tag_tinystr(num)
 #define VALUE_TO_TINYSTR(val) value_untag_tinystr(val)
 

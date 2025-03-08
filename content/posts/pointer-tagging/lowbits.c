@@ -24,11 +24,12 @@ typedef uintptr_t value_t;
 #define VALUE_TAG_MASK 7	// 0b111
 
 #define VALUE_GET_TAG(val, mask) (value_tag_t)((value_t)(val) & mask)
+#define VALUE_HAS_TAG(val, tag) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == (value_tag_t)(tag))
 #define VALUE_SET_TAG(val, tag) ((value_t)(val) | tag)
 #define VALUE_UNSET_TAG(val) ((val) & ~VALUE_TAG_MASK)
 
 // Object value
-#define VALUE_IS_OBJECT(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_OBJECT)
+#define VALUE_IS_OBJECT(val) VALUE_HAS_TAG(val, TAG_OBJECT)
 #define VALUE_FROM_OBJECT(obj) VALUE_SET_TAG(obj, TAG_OBJECT)
 #define VALUE_TO_OBJECT(val) (void *)VALUE_UNSET_TAG(val)
 
@@ -57,7 +58,7 @@ intptr_t value_untag_integer(value_t val) {
 // Float value
 #define FLOAT_SHIFT 31
 
-#define VALUE_IS_FLOAT(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_FLOAT)
+#define VALUE_IS_FLOAT(val) VALUE_HAS_TAG(val, TAG_FLOAT)
 #define VALUE_FROM_FLOAT(num) value_tag_float(num)
 #define VALUE_TO_FLOAT(val) value_untag_float(val)
 
@@ -81,12 +82,12 @@ float value_untag_float(value_t val) {
 }
 
 // String value
-#define VALUE_IS_STRING(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_STRING)
+#define VALUE_IS_STRING(val) VALUE_HAS_TAG(val, TAG_STRING)
 #define VALUE_FROM_STRING(str) VALUE_SET_TAG(str, TAG_STRING)
 #define VALUE_TO_STRING(val) (char *)VALUE_UNSET_TAG(val)
 
 // Tiny string value
-#define VALUE_IS_TINYSTR(val) (VALUE_GET_TAG(val, VALUE_TAG_MASK) == TAG_TINYSTR)
+#define VALUE_IS_TINYSTR(val) VALUE_HAS_TAG(val, TAG_TINYSTR)
 #define VALUE_FROM_TINYSTR(num) value_tag_tinystr(num)
 #define VALUE_TO_TINYSTR(val) value_untag_tinystr(val)
 
