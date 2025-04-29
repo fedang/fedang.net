@@ -5,14 +5,18 @@ categories = [ "langdev", "deep-dive", "low-level" ]
 tags = [ "low-level", "memory", "optimization", "langdev", "interpreter" ]
 +++
 
-Let's explore **tagged pointers**, a clever optimization
-that can reduce memory footprint and boost performance.
+Let's explore **pointer tagging**, a clever optimization used
+to reduce memory footprint and boost performance.
 
 <!--more-->
 
-This technique has a long history[^tagarch] and is used in many critical applications,
-such as  operating system kernels and programming language interpreters.
-We will also see a simple implementation, with a focus on language development.
+Despite not being widely known, this concept has a long history[^tagarch]
+and is used in many critical low-level applications,
+such as operating system kernels and programming language interpreters.
+
+With a focus on language development, we'll analyze tagged pointers and
+produce a simple implementation.
+
 
 ## Preliminary theory
 
