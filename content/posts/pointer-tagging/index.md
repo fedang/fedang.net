@@ -10,13 +10,9 @@ that can reduce memory footprint and boost performance.
 
 <!--more-->
 
-Despite having widespread usage and a long history[^tagarch],
-pointer tagging remains a relatively obscure topic.
-That's because most of its applications are very low-level,
-in operating systems and programming language interpreters.
-
-We will look behind the scenes, analyzing and implementing this technique,
-with a focus on its uses in language development.
+This technique has a long history[^tagarch] and is used in many critical applications,
+such as  operating system kernels and programming language interpreters.
+We will also see a simple implementation, with a focus on language development.
 
 ## Preliminary theory
 
