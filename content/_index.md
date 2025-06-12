@@ -34,7 +34,5 @@ int main() {
 
 - {{< icon bluesky small >}}      Bluesky as [fedang.net](https://bsky.app/profile/fedang.net)
 
-- {{< icon discord small >}}      Discord as *@fed_ang*
-
 
 You can also contact me via email at  *{{< email "main@fedang.net" >}}*.
