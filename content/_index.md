@@ -9,6 +9,7 @@ meta_title = "Federico Angelilli @ ~fedang"
 Hello, I'm Federico :wave:.
 I love programming, especially compilers and other low-level stuff.
 Aside from computers, I enjoy cooking, cycling and reading.
+I also play CTFs sometimes.
 
 <!--more-->
 
@@ -26,13 +27,15 @@ int main() {
 
 - {{< icon github small >}}       Github as [fedang](https://github.com/fedang)
 
+- {{< icon bluesky small >}}      Bluesky as [fedang.net](https://bsky.app/profile/fedang.net)
+
+{{/*
 - {{< icon youtube small >}}      Youtube as [@fedang](https://www.youtube.com/@fedang)
 
 - {{< icon twitch small >}}       Twitch as [fed_ang](https://www.twitch.tv/fed_ang)
 
 - {{< icon reddit-alien small >}} Reddit as [u/fed_ang](https://www.reddit.com/user/fed_ang)
-
-- {{< icon bluesky small >}}      Bluesky as [fedang.net](https://bsky.app/profile/fedang.net)
+*/}}
 
 
 You can also contact me via email at  *{{< email "main@fedang.net" >}}*.
