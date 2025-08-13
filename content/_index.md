@@ -1,7 +1,6 @@
 +++
 title = '~fedang'
 meta_title = "Federico Angelilli @ ~fedang"
-#subtitle = 'Federico Angelilli {{< secondary >}}{{< dash >}}{{< email "main@fedang.net" >}}{{< /secondary >}}'
 +++
 
 ## Welcome

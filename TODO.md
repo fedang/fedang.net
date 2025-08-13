@@ -1,0 +1,6 @@
+- [ ] `misc/` directory
+- [ ] `project/` or `code/` directory
+- [ ] categories/tags page
+- [ ] site map navigation
+- [ ] add filenames/lines to codeblocks
+- [ ] tables (?)
