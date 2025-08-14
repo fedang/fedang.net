@@ -145,6 +145,8 @@ Now it works like we expected:
 I am root!
 ```
 
+## Building from scratch
+
 ## References
 - https://www.sudo.ws/about/intro/
 - https://github.com/trifectatechfoundation/sudo-rs
