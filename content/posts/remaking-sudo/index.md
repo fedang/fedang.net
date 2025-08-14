@@ -55,7 +55,7 @@ we'll just focus on this core pipeline:
 
 As I said before, sudo is just a normal program, and there are others doing the same thing.
 For example, [sudo-rs](sudors) is a recent rewrite of `sudo` in Rust.
-Then there is `doas`[^doasname], a simpler alternative written for OpenBSD.
+Then there is [doas](doas0), a simpler alternative made for OpenBSD.
 
 
 ## A bit of kernel magic -- setuid
@@ -72,7 +72,7 @@ ls -la $(which sudo)
 -rwsr-xr-x 1 root root 290008 Jun 30 22:17 /usr/bin/sudo
 ```
 
-Here we can see the setuid bit, indicated by the `s` -- in the place of `x`.
+Here we can see the setuid bit, indicated by a `s` -- in the place of `x`.
 But, that said, what does this even do?
 
 When a setuid program is executed, the process UID
@@ -147,17 +147,277 @@ I am root!
 
 ## Building from scratch
 
+Now the we know what sudo does and how, we can start making our own version.
+I decided to call it `sus`. If you are wondering, it stands for **s**uper **u**ser **s**tart.
+
+> **Important disclaimer**:
+> This is only an educational project.
+> It's not wise to keep untested setuid binaries around!
+> Use at your own risk, you have been warned...
+
+With the obligatory warning out of the way, it's coding time.
+
+### 1. User authentication
+
+Following the order of the core operations I described in the first section,
+let's start from checking user permissions.
+
+This step is fundamental: if the checks are incorrect, malicious users could do privilege escalation.
+In `sus` we will check if the user is in the `wheel` group[^wheel] and then prompt for their password.
+
+```c
+#define ALLOW_GROUP "wheel"
+#define PWBUF_SIZE 16384
+
+static struct passwd userpw, rootpw;
+static char userbuf[PWBUF_SIZE], rootbuf[PWBUF_SIZE];
+
+static void user_auth()
+{
+    uid_t uid = getuid();
+    struct passwd *ptr = NULL;
+
+    if (getpwuid_r(uid, &userpw, userbuf, sizeof(userbuf), &ptr) != 0 || ptr == NULL)
+        errx(1, "Failed to get user info: entry too large or missing");
+
+    ptr = NULL;
+    if (getpwuid_r(0, &rootpw, rootbuf, sizeof(rootbuf), &ptr) != 0 || ptr == NULL)
+        errx(1, "Failed to get root info: entry too large or missing");
+
+    // User is already root
+    if (uid == 0)
+        return;
+
+    if (!in_group(userpw.pw_name, userpw.pw_gid))
+        errx(1, "User is not in the %s group", ALLOW_GROUP);
+
+    if (!shadow_auth(userpw.pw_name))
+        errx(1, "Authentication failed");
+}
+```
+
+First of all, we read the `passwd` entries for the current user and root.
+By using `getpwuid_r()` and a global buffer, they can be reused later.
+
+Also, you can see the very refined error handling approach I decided to use:
+exiting at the first problem.
+Since the code is so short, this seemed the best way.
+
+Anyway, let's move on onto the function to check group membership `in_group()`.
+
+```c
+#define MAX_GROUPS 128
+
+static bool in_group(const char *user, gid_t gid)
+{
+    struct group *grp = getgrnam(ALLOW_GROUP);
+    if (!grp)
+        return false;
+
+    gid_t allow = grp->gr_gid;
+    if (gid == allow)
+        return true;
+
+    gid_t groups[MAX_GROUPS];
+    int ngroups = MAX_GROUPS;
+
+    int ret = getgrouplist(user, gid, groups, &ngroups);
+    if (ret == -1)
+        errx(1, "Failed to get user groups");
+
+    if (ngroups > MAX_GROUPS)
+        errx(1, "Do you really need so many groups?");
+
+    bool ok = false;
+    for (int i = 0; i < ngroups; i++) {
+        if (groups[i] == allow) {
+            ok = true;
+            break;
+        }
+    }
+    return ok;
+}
+```
+
+This function starts by getting the `group` struct associated with `wheel`,
+and saving its GID.
+Then, a buffer is filled with the supplementary groups of the user.
+If any of those matches the allowed GID, the function returns true.
+
+
+As for `shadow_auth()`, it simply prompts a password in the TTY,
+then checks if the hash matches the one stored in the shadow file[^shadow].
+
+```c
+static bool shadow_auth(const char *user)
+{
+    char rbuf[1024], cbuf[128], host[HOST_NAME_MAX + 1];
+    const char *chall = "Password: ";
+    char *pass = readpassphrase(chall, rbuf, sizeof(rbuf), RPP_REQUIRE_TTY);
+
+    if (!pass)
+        err(1, "Failed to read passphrase");
+
+    struct spwd *spw = getspnam(user);
+    if (!spw)
+        return false;
+
+    char *res = crypt(pass, spw->sp_pwdp);
+    return res && !strcmp(res, spw->sp_pwdp);
+}
+```
+
+The `spwd` struct is analogous to `passwd`, which we have seen before.
+The passwords stored in shadow use the `crypt()` hash function, which is part of libcrypt.
+
+You might have noticed the usage of `readpassphrase()`.
+This is very useful function that reads a password from TTY without echo[^readpass].
+I discovered this little gem while diving in `doas` source code[^doas].
+Unfortunately this function is only included in BSDs.
+Despite that, you can copy the original file[^readpass2]
+and use it also on Linux.
+
+Here's a copy of the source files I used: [readpassphrase.c]({{< fullpath "readpassphrase.c" >}})
+and [readpassphrase.h]({{< fullpath "readpassphrase.h" >}}).
+
+### 2. Environment variables
+
+```c
+#define SAFE_PATH \
+    "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
+
+static void env_prepare()
+{
+    const char *pass[3] = { "TERM", "DISPLAY", NULL };
+    char *save[3] = { NULL };
+
+    for (int i = 0; pass[i]; i++) {
+        const char *val = getenv(pass[i]);
+        save[i] = val ? strdup(val) : NULL;
+    }
+
+    if (clearenv() == -1)
+        err(1, "clearenv");
+
+    if (setenv("PATH", SAFE_PATH, 1) == -1 ||
+        setenv("USER", rootpw.pw_name, 1) == -1 ||
+        setenv("SHELL", rootpw.pw_shell, 1) == -1 ||
+        setenv("HOME", rootpw.pw_dir, 1) == -1 ||
+        setenv("LOGNAME", rootpw.pw_name, 1) == -1 ||
+        setenv("SUS_USER", userpw.pw_name, 1) == -1)
+        err(1, "setenv");
+
+    for (int i = 0; pass[i]; i++) {
+        if (!save[i])
+            continue;
+
+        if (setenv(pass[i], save[i], 1) == -1)
+            err(1, "setenv");
+        free(save[i]);
+    }
+}
+```
+
+### 3. Command execution
+
+At this point we trust the user and we have a prepared
+the environment variables for running our command.
+But there is still something that has to be done before
+we can use the `exec` system call.
+
+As we saw before in the small test, `setuid` changes only the effective UID.
+Thus, we must commit to the real UID and GID to get the privileges that we want.
+
+```c
+static void cmd_execute(int argc, char **argv)
+{
+    // Escalate privileges
+    umask(022);
+    if (initgroups(rootpw.pw_name, rootpw.pw_gid) == -1)
+        err(1, "initgroups");
+
+    if (setgid(0) == -1)
+        err(1, "setgid");
+
+    if (setuid(0) == -1)
+        err(1, "setuid");
+
+    // Execute given program (or shell)
+    char *binsh[2] = { NULL };
+    if (argc == 0) {
+        binsh[0] = rootpw.pw_shell ? rootpw.pw_shell : "/bin/sh";
+        argv = binsh;
+    }
+
+    execvp(*argv, argv);
+    err(1, "Command execution failed");
+}
+```
+
+The `umask()` call is setting the default permission file mask,
+while `initgroups()` is setting the supplementary groups for root.
+
+Finally, `execvp` is a variant of the `exec*` functions that
+searches the executable in the `PATH` (similarly to the shell).
+
+### Tying them all together
+
+```c
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <string.h>
+#include <err.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <pwd.h>
+#include <grp.h>
+#include <limits.h>
+#include <shadow.h>
+#include <crypt.h>
+
+#include "readpassphrase.h"
+
+// ... previous functions ...
+
+int main(int argc, char **argv)
+{
+    user_auth();
+
+    env_prepare();
+
+    cmd_execute(argc - 1, &argv[1]);
+}
+```
+
+## Some security hardening
+
+
+## Pluggable Authentication Module
+
+
 ## References
 - https://www.sudo.ws/about/intro/
 - https://github.com/trifectatechfoundation/sudo-rs
 - https://cvsweb.openbsd.org/src/usr.bin/doas/doas.c?rev=1.98
 - https://github.com/Duncaen/OpenDoas
-
+- *Dedicated Openbsd Application Subexecutor*,\
+    https://flak.tedunangst.com/post/doas
 
 [^man]: https://www.sudo.ws/docs/man/1.8.10/sudo.man/
 [^doas]: https://github.com/multiplexd/doas/blob/master/doas.c
 [^sudocode]: https://github.com/sudo-project/sudo/blob/main/src/sudo.c
 
-[^doasname]: *Dedicated Openbsd Application Subexecutor*,\
-             https://flak.tedunangst.com/post/doas
+[^readpass2]: https://cvsweb.openbsd.org/src/lib/libc/gen/readpassphrase.c?rev=1.27
+
+[doas0]: https://flak.tedunangst.com/post/doas
+
 [sudors]: https://github.com/trifectatechfoundation/sudo-rs
+
+[^readpass]: https://man.freebsd.org/cgi/man.cgi?query=readpassphrase&sektion=3
+
+[^wheel]: The group for accessing sudo/doas has been traditionally called `wheel`, \
+          https://en.wikipedia.org/wiki/Wheel_(computing)
+
+[^shadow]: Password hashes are stored in `/etc/shadow`, \
+            https://man7.org/linux/man-pages/man5/shadow.5.html
