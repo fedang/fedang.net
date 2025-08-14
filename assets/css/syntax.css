@@ -1,4 +1,4 @@
-.cmd-root .cl::before {
+.cmd-user .cl::before {
   color: #669900;
   font-weight: bold;
   user-select: none;
@@ -13,6 +13,8 @@
 
 /* Chroma style: xcode */
 @media (prefers-color-scheme: light) {
+/* Generated using: hugo gen chromastyles --style=xcode */
+
 /* Background */ .bg { background-color:#fff; }
 /* PreWrapper */ .chroma { background-color:#fff; }
 /* Other */ .chroma .x {  }
@@ -34,25 +36,25 @@
 /* KeywordType */ .chroma .kt { color:#a90d91 }
 /* Name */ .chroma .n { color:#000 }
 /* NameAttribute */ .chroma .na { color:#836c28 }
-/* NameBuiltin */ .chroma .nb { color:#a90d91 }
-/* NameBuiltinPseudo */ .chroma .bp { color:#5b269a }
 /* NameClass */ .chroma .nc { color:#3f6e75 }
 /* NameConstant */ .chroma .no { color:#000 }
 /* NameDecorator */ .chroma .nd { color:#000 }
 /* NameEntity */ .chroma .ni { color:#000 }
 /* NameException */ .chroma .ne { color:#000 }
-/* NameFunction */ .chroma .nf { color:#000 }
-/* NameFunctionMagic */ .chroma .fm { color:#000 }
 /* NameLabel */ .chroma .nl { color:#000 }
 /* NameNamespace */ .chroma .nn { color:#000 }
 /* NameOther */ .chroma .nx { color:#000 }
 /* NameProperty */ .chroma .py { color:#000 }
 /* NameTag */ .chroma .nt { color:#000 }
+/* NameBuiltin */ .chroma .nb { color:#a90d91 }
+/* NameBuiltinPseudo */ .chroma .bp { color:#5b269a }
 /* NameVariable */ .chroma .nv { color:#000 }
 /* NameVariableClass */ .chroma .vc { color:#000 }
 /* NameVariableGlobal */ .chroma .vg { color:#000 }
 /* NameVariableInstance */ .chroma .vi { color:#000 }
 /* NameVariableMagic */ .chroma .vm { color:#000 }
+/* NameFunction */ .chroma .nf { color:#000 }
+/* NameFunctionMagic */ .chroma .fm { color:#000 }
 /* Literal */ .chroma .l { color:#1c01ce }
 /* LiteralDate */ .chroma .ld { color:#1c01ce }
 /* LiteralString */ .chroma .s { color:#c41a16 }
@@ -104,6 +106,8 @@
 
 /* Chroma style: modus-vivendi */
 @media (prefers-color-scheme: dark) {
+/* Generated using: hugo gen chromastyles --style=modus-vivendi */
+
 /* Background */ .bg { color:#fff;background-color:#000; }
 /* PreWrapper */ .chroma { color:#fff;background-color:#000; }
 /* Other */ .chroma .x {  }
@@ -125,25 +129,25 @@
 /* KeywordType */ .chroma .kt { color:#6ae4b9 }
 /* Name */ .chroma .n {  }
 /* NameAttribute */ .chroma .na {  }
-/* NameBuiltin */ .chroma .nb { color:#f78fe7 }
-/* NameBuiltinPseudo */ .chroma .bp {  }
 /* NameClass */ .chroma .nc {  }
 /* NameConstant */ .chroma .no {  }
 /* NameDecorator */ .chroma .nd {  }
 /* NameEntity */ .chroma .ni {  }
 /* NameException */ .chroma .ne {  }
-/* NameFunction */ .chroma .nf { color:#feacd0 }
-/* NameFunctionMagic */ .chroma .fm {  }
 /* NameLabel */ .chroma .nl {  }
 /* NameNamespace */ .chroma .nn {  }
 /* NameOther */ .chroma .nx {  }
 /* NameProperty */ .chroma .py {  }
 /* NameTag */ .chroma .nt {  }
+/* NameBuiltin */ .chroma .nb { color:#f78fe7 }
+/* NameBuiltinPseudo */ .chroma .bp { color:#f78fe7 }
 /* NameVariable */ .chroma .nv { color:#00d3d0 }
-/* NameVariableClass */ .chroma .vc {  }
-/* NameVariableGlobal */ .chroma .vg {  }
-/* NameVariableInstance */ .chroma .vi {  }
-/* NameVariableMagic */ .chroma .vm {  }
+/* NameVariableClass */ .chroma .vc { color:#00d3d0 }
+/* NameVariableGlobal */ .chroma .vg { color:#00d3d0 }
+/* NameVariableInstance */ .chroma .vi { color:#00d3d0 }
+/* NameVariableMagic */ .chroma .vm { color:#00d3d0 }
+/* NameFunction */ .chroma .nf { color:#feacd0 }
+/* NameFunctionMagic */ .chroma .fm { color:#feacd0 }
 /* Literal */ .chroma .l { color:#00bcff }
 /* LiteralDate */ .chroma .ld { color:#00bcff }
 /* LiteralString */ .chroma .s { color:#79a8ff }

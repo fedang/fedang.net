@@ -7,7 +7,7 @@ DARK=modus-vivendi
 CSS=assets/css/syntax.css
 
 cat << EOF > $CSS
-.cmd-root .cl::before {
+.cmd-user .cl::before {
   color: #669900;
   font-weight: bold;
   user-select: none;
