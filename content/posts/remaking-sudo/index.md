@@ -6,23 +6,22 @@ In Linux, `sudo` is an essential tool for system administration.
 Let's demystify how it works by writing our own small clone.
 """
 
-categories = [ "linux", "deep-dive" ]
+categories = [ "linux", "deep-dive", "programming" ]
 tags = [ "linux", "suid", "security", "pam", "c", "sysadmin" ]
 
 no_pubinfo = false
 no_rssfeed = false
-draft = true
 +++
 
 In the Linux world, `sudo` is an essential tool for system administration.
 While most users have used it at least once, not everyone knows how it works.
 Today, we'll demystify `sudo` and, along the way, write our own small clone.
-Because what better way to understand something than making it from scratch?
+After all, what better way to understand something than making it from scratch?
 
 ## What is sudo again?
 
 Let's start by recalling what `sudo` is.
-It stands for **s**uper **u**ser **do**, and as the name implies,
+It stands for **s**uper**u**ser **do**, and as the name implies,
 it allows regular users to execute commands as the administrator.
 For example, running `whoami` with sudo won't return your username:
 
@@ -33,8 +32,8 @@ sudo whoami
 root
 ```
 
-On Linux, the super user is traditionally called `root`.
-But what really makes it special is that its user id (UID) is `0`.
+On Linux, the superuser is traditionally called `root`.
+But what really makes it special is that its user ID (UID) is 0.
 
 ```sh {class="cmd-user"}
 sudo id
@@ -44,7 +43,7 @@ uid=0(root) gid=0(root) groups=0(root)
 ```
 
 Of course, we can't let everyone just run privileged commands as they wish.
-That's why sudo makes several checks (group membership, user password, etc)
+That's why sudo makes several checks (group membership, user password, etc.)
 before allowing execution.
 
 Actually, sudo has many more features[^man], but for the sake of simplicity,
@@ -91,7 +90,7 @@ int main()
 }
 ```
 
-This very simple program just prints a message when we are root.
+This simple program just prints a message when run as root.
 Let's try adding the `setuid` bit.
 Note that we are compiling as root, otherwise you should use `chown root` to change file ownership.
 
@@ -104,7 +103,7 @@ ls -la example
 -rwsr-xr-x 1 root   root    20K Aug 14 21:09 example
 ```
 
-If we run this now, we will, not very surprisingly, see the message:
+If we run this now, we will unsurprisingly see the message:
 
 ```sh {class="cmd-root"}
 ./example
@@ -121,8 +120,8 @@ But what happens if we run this as a regular user?
 
 Nothing... What is going on here?
 
-Well, I said that `setuid` sets the UID to the one of the file owner.
-What I didn't say is that it sets the *effective* UID, which is different than the *real* UID.
+Well, I said that `setuid` sets the UID to that of the file owner.
+What I didn't say is that it sets the *effective* UID, which is different from the *real* UID.
 But this is not a big problem, since we can set the real UID manually.
 
 ```c
@@ -136,7 +135,7 @@ int main()
 }
 ```
 
-Now it works like we expected:
+Now it works as we expected:
 
 ```sh {class="cmd-user"}
 ./example
@@ -145,24 +144,37 @@ Now it works like we expected:
 I am root!
 ```
 
+Here's a small figure to recap:
+
+```
+  normal executable               setuid executable
++--------------------+          +--------------------+
+| owner: 0    (root) |          | owner: 0    (root) |
+| ruid:  1000 (user) |          | ruid:  1000 (user) |
+| euid:  1000 (user) |          | euid:  0    (root) |
++--------------------+          +--------------------+
+```
+
+
 ## Building from scratch
 
 Now that we know what sudo does and how, we can start making our own version.
-I decided to call it `sus`. If you are wondering, it stands for **s**uper **u**ser **s**tart.
+I decided to call it `sus`. If you are wondering, it stands for **s**uper**u**ser **s**tart.
 
-> **Important disclaimer**:
-> This is only an educational project.
-> It's not wise to keep untested setuid binaries around!
-> Use at your own risk, you have been warned...
+{{< note "⚠️ Important disclaimer" >}}
+This is only an educational project.
+It's not wise to keep untested setuid binaries around!
+Use at your own risk, you have been warned...
+{{< /note >}}
 
 With the obligatory warning out of the way, it's coding time.
 
 ### 1. User authentication
 
 Following the order of the core operations I described in the first section,
-let's start from checking user permissions.
+let's start with checking user permissions.
 
-This step is fundamental: if the checks are incorrect, malicious users could do privilege escalation.
+This step is crucial: if the checks are incorrect, malicious users could escalate their privileges.
 In `sus` we will check if the user is in the `wheel` group[^wheel] and then prompt for their password.
 
 ```c
@@ -196,11 +208,10 @@ static void user_auth()
 }
 ```
 
-First of all, we read the `passwd` entries for the current user and root.
-By using `getpwuid_r()` and a global buffer, they can be reused later.
+First of all, we read the `passwd` struct for the current user and root.
+By using `getpwuid_r()` and a global buffer, the entries can be used by other functions.
 
-Also, you can see the very refined error handling approach I decided to use:
-exiting at the first problem.
+Also, you can see the foolproof error-handling approach I chose: exiting at the first problem.
 Since the code is so short, this seemed the best way.
 
 Anyway, let's move on to the group membership check.
@@ -245,7 +256,7 @@ Then, a buffer is filled with the supplementary groups of the user.
 If any of those matches the allowed GID, the function returns true.
 
 
-As for `shadow_auth()`, it simply prompts a password in the TTY,
+As for `shadow_auth()`, it simply prompts the user for a password in the TTY,
 then checks if the hash matches the one stored in the shadow file[^shadow].
 
 ```c
@@ -271,21 +282,20 @@ The `spwd` struct is analogous to `passwd`, which we have seen before.
 The hashed passwords use `crypt()`, which is part of libcrypt.
 
 You might have noticed the usage of `readpassphrase()`.
-This is very useful function that reads a password from TTY without echo[^readpass].
-I discovered this little gem while diving in `doas` source code[^doas].
-Unfortunately this function is only included in BSDs.
-Despite that, you can copy the original file[^readpass2]
-and use it also on Linux.
+This is a very useful function that reads a password from TTY without echo[^readpass].
+I discovered this little gem while diving into `doas` source code[^doas].
+Unfortunately, this function is available only on BSDs.
+Despite that, you can copy the original file[^readpass2] and use it on Linux easily.
 
 Here's a copy of the files ready to be used on Linux: [readpassphrase.c]({{< fullpath "readpassphrase.c" >}})
 and [readpassphrase.h]({{< fullpath "readpassphrase.h" >}}).
 
 ### 2. Environment variables
 
-When acting as another user, it's important to sanitize and update the environment.
+When acting as another user, it's important to sanitize the environment.
 Some variables are used extensively, for example `HOME` and `USER`.
 Others, like `LD_PRELOAD`, can be used to hijack programs[^ld],
-so they should not be inherited for security concerns.
+so they should not be inherited for security reasons.
 
 ```c
 static void env_prepare()
@@ -324,11 +334,11 @@ Finally, the saved values are restored.
 
 ### 3. Command execution
 
-At this point we trust the user and we have prepared the environment for running our command.
+At this point, we trust the user and we have prepared the environment for running our command.
 But there is still something that has to be done before we can use the `exec` system call.
 
 As we saw before in the small test, `setuid` changes only the effective UID.
-Thus, we must commit to the real UID and GID to get the privileges that we want.
+Thus, we must set the real UID and GID to get the privileges that we want.
 
 ```c
 static void cmd_execute(int argc, char **argv)
@@ -350,6 +360,9 @@ static void cmd_execute(int argc, char **argv)
     if (argc <= 1) {
         binsh[0] = rootpw.pw_shell ? rootpw.pw_shell : "/bin/sh";
         argv = binsh;
+    } else {
+        // Skip argv0
+        argv++;
     }
 
     execvp(*argv, argv);
@@ -357,12 +370,12 @@ static void cmd_execute(int argc, char **argv)
 }
 ```
 
-The `umask()` call is setting the default permission file mask,
-while `initgroups()` is setting the supplementary groups for root.
+The `umask()` call sets the default permission file mask,
+while `initgroups()` sets the supplementary groups for root.
 
-Finally, `execvp` is a variant of the `exec*` functions that
+Finally, `execvp` is a variant of the `exec` family that
 searches the executable in the `PATH` (similar to the shell).
-We will execute the arguments received from the cli,
+We will execute the arguments received from the CLI,
 and if none are provided fall back to the shell.
 
 ### Tying them all together
@@ -398,7 +411,7 @@ int main(int argc, char **argv)
 }
 ```
 
-Before continuing remember to add yourself to the `wheel` group:
+Before continuing, remember to add yourself to the `wheel` group:
 ```sh {class="cmd-root"}
 sudo usermod -aG wheel user
 ```
@@ -423,7 +436,7 @@ SHELL=/bin/bash
 PWD=/home/fedang/code/sus
 LOGNAME=root
 SUS_USER=fedang
-HOME=/home/root
+HOME=/root
 TERM=alacritty
 USER=root
 DISPLAY=:0
@@ -441,16 +454,16 @@ The UID, GID, groups and environment are set up correctly for the `root` user.
 While `sus` is technically complete, we can still make some improvements.
 
 For example, what happens if a malicious user renames
-or symlinks `sus` so that the user thinks they are running something else?
+or symlinks `sus` to make unsuspecting users think they are running something else?
 
 ```sh {class="cmd-user"}
-not_sus something something
+not_sus something bad
 ```
 ```sh
 Pwned 😈
 ```
 
-The real `sudo` has a whitelist[^sudocode] for `argv[0]` (the executable name).
+The real `sudo` has a whitelist for `argv[0]` (the executable name).
 
 ```c
 initprogname2(argc > 0 ? argv[0] : "sudo", allowed_prognames);
@@ -490,7 +503,7 @@ int main(int argc, char **argv)
 Now it's much better:
 
 ```sh {class="cmd-user"}
-not_sus something something
+not_sus something bad
 ```
 ```
 Invoked with wrong filename: not_sus
@@ -529,7 +542,7 @@ static void env_prepare()
 }
 ```
 
-## Pluggable Authentication Module
+## PAM -- Pluggable Authentication Modules
 
 Now, our small program not only works but is also secure (hopefully 🤞).
 Despite that, we can still improve in one aspect: ecosystem integration.
@@ -539,7 +552,7 @@ This framework was developed to remove the burden of authentication
 from the end applications.
 Instead, modules are loaded at runtime to provide flexible authentication schemes.
 
-Thankfully, integrating PAM in our application is not difficult.
+Thankfully, integrating PAM into our application is not difficult.
 This function does a very basic authentication pipeline.
 
 ```c
@@ -595,16 +608,14 @@ chmod u+s sus
 
 ### PAM configuration
 
-Now that we delegated our authentication to PAM,
+Now that we have delegated our authentication to PAM,
 it's crucial that we configure it correctly.
 Otherwise, our program could stop working or become
 a security hole!
 
-PAM configuration files are stored in `/etc/pam.d/`,
-but they might differ depending on your distribution.
-
-The best bet is copying the content of `/etc/pam.d/sudo`
-and adapt it for `sus`.
+PAM configuration files are stored in `/etc/pam.d/`.
+But since they differ depending on your distribution,
+the best bet is to copy and adapt the content of `/etc/pam.d/sudo`.
 
 For example, on my machine I ended up with this `/etc/pam.d/sus`:
 ```
@@ -614,16 +625,28 @@ account 	include 	system-auth
 session 	include 	system-auth
 ```
 
-## Further steps
+## Conclusion
 
+We are finally done with this project.
+Though, I would refrain from using it in the real world.
+
+When comparing `sus` to `sudo` (and alternatives),
+it's clear that many features are missing.
+To name a few: no logging, no locales, and no target user selection (just root).
+Furthermore, we don't read a config file (like `sudoers`) for fine-grained permissions,
+but just bake constant values into the code.
+
+If you liked this post, I recommend reading doas's source code[^doas-src].
+It's pretty concise and easy to follow. I found it quite helpful when writing this article and `sus`.
+
+Here you can find the source code for [sus.c]({{< fullpath "sus.c" >}}) (~160 LOC)
+and a bonus [Makefile]({{< fullpath "Makefile" >}}).
 
 ## References
 - https://www.sudo.ws/about/intro/
 - https://github.com/trifectatechfoundation/sudo-rs
-- https://cvsweb.openbsd.org/src/usr.bin/doas/doas.c?rev=1.98
 - https://github.com/Duncaen/OpenDoas
-- *Dedicated Openbsd Application Subexecutor*,\
-    https://flak.tedunangst.com/post/doas
+- https://flak.tedunangst.com/post/doas
 - https://wiki.archlinux.org/title/PAM
 - https://www.redhat.com/en/blog/pluggable-authentication-modules-pam
 - https://github.com/linux-pam/linux-pam
@@ -632,7 +655,6 @@ session 	include 	system-auth
 
 [^man]: https://www.sudo.ws/docs/man/1.8.10/sudo.man/
 [^doas]: https://github.com/multiplexd/doas/blob/master/doas.c
-[^sudocode]: https://github.com/sudo-project/sudo/blob/main/src/sudo.c
 
 [^readpass2]: https://cvsweb.openbsd.org/src/lib/libc/gen/readpassphrase.c?rev=1.27
 
@@ -649,3 +671,5 @@ session 	include 	system-auth
             https://man7.org/linux/man-pages/man5/shadow.5.html
 
 [^ld]: https://man7.org/linux/man-pages/man8/ld.so.8.html
+
+[^doas-src]: https://cvsweb.openbsd.org/src/usr.bin/doas/doas.c?rev=1.98
