@@ -13,7 +13,7 @@
 
 /* Chroma style: xcode */
 @media (prefers-color-scheme: light) {
-/* Generated using: hugo gen chromastyles --style=xcode */
+/* Generated using: hugo gen chromastyles --highlightStyle bg:#d0e0f0 --style=xcode */
 
 /* Background */ .bg { background-color:#fff; }
 /* PreWrapper */ .chroma { background-color:#fff; }
@@ -23,7 +23,7 @@
 /* LineLink */ .chroma .lnlinks { outline:none;text-decoration:none;color:inherit }
 /* LineTableTD */ .chroma .lntd { vertical-align:top;padding:0;margin:0;border:0; }
 /* LineTable */ .chroma .lntable { border-spacing:0;padding:0;margin:0;border:0; }
-/* LineHighlight */ .chroma .hl { background-color:#e5e5e5 }
+/* LineHighlight */ .chroma .hl { background-color:#d0e0f0 }
 /* LineNumbersTable */ .chroma .lnt { white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f }
 /* LineNumbers */ .chroma .ln { white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f }
 /* Line */ .chroma .line { display:flex; }
@@ -106,7 +106,7 @@
 
 /* Chroma style: modus-vivendi */
 @media (prefers-color-scheme: dark) {
-/* Generated using: hugo gen chromastyles --style=modus-vivendi */
+/* Generated using: hugo gen chromastyles --highlightStyle bg:#253040 --style=modus-vivendi */
 
 /* Background */ .bg { color:#fff;background-color:#000; }
 /* PreWrapper */ .chroma { color:#fff;background-color:#000; }
@@ -116,7 +116,7 @@
 /* LineLink */ .chroma .lnlinks { outline:none;text-decoration:none;color:inherit }
 /* LineTableTD */ .chroma .lntd { vertical-align:top;padding:0;margin:0;border:0; }
 /* LineTable */ .chroma .lntable { border-spacing:0;padding:0;margin:0;border:0; }
-/* LineHighlight */ .chroma .hl { background-color:#191919 }
+/* LineHighlight */ .chroma .hl { background-color:#253040 }
 /* LineNumbersTable */ .chroma .lnt { white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f }
 /* LineNumbers */ .chroma .ln { white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f }
 /* Line */ .chroma .line { display:flex; }

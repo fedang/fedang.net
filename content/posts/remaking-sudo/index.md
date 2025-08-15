@@ -1,5 +1,5 @@
 +++
-date = 2025-08-13T15:27:50+02:00
+date = 2025-08-16T15:27:50+02:00
 title = 'Understanding sudo by writing your own'
 summary = """
 In Linux, `sudo` is an essential tool for system administration.
@@ -54,8 +54,8 @@ we'll just focus on this core pipeline:
 3. Execute commands as a privileged user
 
 As I said before, sudo is just a normal program, and there are others doing the same thing.
-For example, [sudo-rs](sudors) is a recent rewrite of `sudo` in Rust.
-Then there is [doas](doas0), a simpler alternative made for OpenBSD.
+For example, [sudo-rs][sudors] is a recent rewrite of `sudo` in Rust.
+Then there is [doas][doas0], a simpler alternative made for OpenBSD.
 
 
 ## A bit of kernel magic -- setuid
@@ -147,7 +147,7 @@ I am root!
 
 ## Building from scratch
 
-Now the we know what sudo does and how, we can start making our own version.
+Now that we know what sudo does and how, we can start making our own version.
 I decided to call it `sus`. If you are wondering, it stands for **s**uper **u**ser **s**tart.
 
 > **Important disclaimer**:
@@ -203,7 +203,7 @@ Also, you can see the very refined error handling approach I decided to use:
 exiting at the first problem.
 Since the code is so short, this seemed the best way.
 
-Anyway, let's move on onto the function to check group membership `in_group()`.
+Anyway, let's move on to the group membership check.
 
 ```c
 #define MAX_GROUPS 128
@@ -268,7 +268,7 @@ static bool shadow_auth(const char *user)
 ```
 
 The `spwd` struct is analogous to `passwd`, which we have seen before.
-The passwords stored in shadow use the `crypt()` hash function, which is part of libcrypt.
+The hashed passwords use `crypt()`, which is part of libcrypt.
 
 You might have noticed the usage of `readpassphrase()`.
 This is very useful function that reads a password from TTY without echo[^readpass].
@@ -277,19 +277,21 @@ Unfortunately this function is only included in BSDs.
 Despite that, you can copy the original file[^readpass2]
 and use it also on Linux.
 
-Here's a copy of the source files I used: [readpassphrase.c]({{< fullpath "readpassphrase.c" >}})
+Here's a copy of the files ready to be used on Linux: [readpassphrase.c]({{< fullpath "readpassphrase.c" >}})
 and [readpassphrase.h]({{< fullpath "readpassphrase.h" >}}).
 
 ### 2. Environment variables
 
-```c
-#define SAFE_PATH \
-    "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
+When acting as another user, it's important to sanitize and update the environment.
+Some variables are used extensively, for example `HOME` and `USER`.
+Others, like `LD_PRELOAD`, can be used to hijack programs[^ld],
+so they should not be inherited for security concerns.
 
+```c
 static void env_prepare()
 {
-    const char *pass[3] = { "TERM", "DISPLAY", NULL };
-    char *save[3] = { NULL };
+    const char *pass[4] = { "TERM", "DISPLAY", "PATH", NULL };
+    char *save[4] = { NULL };
 
     for (int i = 0; pass[i]; i++) {
         const char *val = getenv(pass[i]);
@@ -299,8 +301,7 @@ static void env_prepare()
     if (clearenv() == -1)
         err(1, "clearenv");
 
-    if (setenv("PATH", SAFE_PATH, 1) == -1 ||
-        setenv("USER", rootpw.pw_name, 1) == -1 ||
+    if (setenv("USER", rootpw.pw_name, 1) == -1 ||
         setenv("SHELL", rootpw.pw_shell, 1) == -1 ||
         setenv("HOME", rootpw.pw_dir, 1) == -1 ||
         setenv("LOGNAME", rootpw.pw_name, 1) == -1 ||
@@ -310,7 +311,6 @@ static void env_prepare()
     for (int i = 0; pass[i]; i++) {
         if (!save[i])
             continue;
-
         if (setenv(pass[i], save[i], 1) == -1)
             err(1, "setenv");
         free(save[i]);
@@ -318,12 +318,14 @@ static void env_prepare()
 }
 ```
 
+We start by saving a list of whitelisted variables.
+Then, we clear the environment and only add common values from root's passwd entry.
+Finally, the saved values are restored.
+
 ### 3. Command execution
 
-At this point we trust the user and we have a prepared
-the environment variables for running our command.
-But there is still something that has to be done before
-we can use the `exec` system call.
+At this point we trust the user and we have prepared the environment for running our command.
+But there is still something that has to be done before we can use the `exec` system call.
 
 As we saw before in the small test, `setuid` changes only the effective UID.
 Thus, we must commit to the real UID and GID to get the privileges that we want.
@@ -333,6 +335,7 @@ static void cmd_execute(int argc, char **argv)
 {
     // Escalate privileges
     umask(022);
+
     if (initgroups(rootpw.pw_name, rootpw.pw_gid) == -1)
         err(1, "initgroups");
 
@@ -344,7 +347,7 @@ static void cmd_execute(int argc, char **argv)
 
     // Execute given program (or shell)
     char *binsh[2] = { NULL };
-    if (argc == 0) {
+    if (argc <= 1) {
         binsh[0] = rootpw.pw_shell ? rootpw.pw_shell : "/bin/sh";
         argv = binsh;
     }
@@ -358,9 +361,14 @@ The `umask()` call is setting the default permission file mask,
 while `initgroups()` is setting the supplementary groups for root.
 
 Finally, `execvp` is a variant of the `exec*` functions that
-searches the executable in the `PATH` (similarly to the shell).
+searches the executable in the `PATH` (similar to the shell).
+We will execute the arguments received from the cli,
+and if none are provided fall back to the shell.
 
 ### Tying them all together
+
+Each phase is handled by the functions we saw earlier,
+so all that's left is some C glue.
 
 ```c
 #include <unistd.h>
@@ -386,14 +394,227 @@ int main(int argc, char **argv)
 
     env_prepare();
 
-    cmd_execute(argc - 1, &argv[1]);
+    cmd_execute(argc, argv);
 }
 ```
 
+Before continuing remember to add yourself to the `wheel` group:
+```sh {class="cmd-root"}
+sudo usermod -aG wheel user
+```
+
+Finally, let's compile...
+
+```sh {class="cmd-root"}
+cc -o sus sus.c -lcrypt
+chmod u+s sus
+```
+...and try it out.
+
+```sh {class="cmd-user"}
+./sus
+```
+```sh
+Password:
+bash-5.2# id
+uid=0(root) gid=0(root) groups=0(root)
+bash-5.2# env
+SHELL=/bin/bash
+PWD=/home/fedang/code/sus
+LOGNAME=root
+SUS_USER=fedang
+HOME=/home/root
+TERM=alacritty
+USER=root
+DISPLAY=:0
+SHLVL=1
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+_=/bin/env
+bash-5.2#
+```
+
+Works to a tee!
+The UID, GID, groups and environment are set up correctly for the `root` user.
+
 ## Some security hardening
 
+While `sus` is technically complete, we can still make some improvements.
+
+For example, what happens if a malicious user renames
+or symlinks `sus` so that the user thinks they are running something else?
+
+```sh {class="cmd-user"}
+not_sus something something
+```
+```sh
+Pwned 😈
+```
+
+The real `sudo` has a whitelist[^sudocode] for `argv[0]` (the executable name).
+
+```c
+initprogname2(argc > 0 ? argv[0] : "sudo", allowed_prognames);
+```
+
+We can add a small check to block invocations with a name other than `sus`.
+
+```c
+static void integrity_check(const char *argv0)
+{
+    const char *name = strrchr(argv0, '/');
+    name = name ? &name[1] : argv0;
+    if (strcmp(name, "sus"))
+        errx(1, "Invoked with wrong filename: %s", name);
+
+    if (geteuid() != 0)
+        errx(1, "Not running with EUID 0, is this root-owned and setuid?");
+}
+```
+
+I also added a check for the effective UID.
+Let's plug this into `main()`.
+
+```c {hl_lines=3}
+int main(int argc, char **argv)
+{
+    integrity_check(argc > 0 ? argv[0] : "sus");
+
+    user_auth();
+
+    env_prepare();
+
+    cmd_execute(argc, argv);
+}
+```
+
+Now it's much better:
+
+```sh {class="cmd-user"}
+not_sus something something
+```
+```
+Invoked with wrong filename: not_sus
+```
+
+Another thing that could be made stricter is the handling of `PATH`.
+Currently, the value is passed through due to the whitelist.
+To increase security, we can replace it with a known safe `PATH` instead.
+
+```c {hl_lines=[6,7,17]}
+#define SAFE_PATH \
+    "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
+
+static void env_prepare()
+{
+    const char *pass[3] = { "TERM", "DISPLAY", NULL };
+    char *save[3] = { NULL };
+
+    for (int i = 0; pass[i]; i++) {
+        const char *val = getenv(pass[i]);
+        save[i] = val ? strdup(val) : NULL;
+    }
+
+    if (clearenv() == -1)
+        err(1, "clearenv");
+
+    if (setenv("PATH", SAFE_PATH, 1) == -1 ||
+        setenv("USER", rootpw.pw_name, 1) == -1 ||
+        setenv("SHELL", rootpw.pw_shell, 1) == -1 ||
+        setenv("HOME", rootpw.pw_dir, 1) == -1 ||
+        setenv("LOGNAME", rootpw.pw_name, 1) == -1 ||
+        setenv("SUS_USER", userpw.pw_name, 1) == -1)
+        err(1, "setenv");
+
+    // ...
+}
+```
 
 ## Pluggable Authentication Module
+
+Now, our small program not only works but is also secure (hopefully 🤞).
+Despite that, we can still improve in one aspect: ecosystem integration.
+
+A lot of Linux software relies on [PAM][pam] for authentication.
+This framework was developed to remove the burden of authentication
+from the end applications.
+Instead, modules are loaded at runtime to provide flexible authentication schemes.
+
+Thankfully, integrating PAM in our application is not difficult.
+This function does a very basic authentication pipeline.
+
+```c
+#include <security/pam_appl.h>
+#include <security/pam_misc.h>
+
+static int pam_auth(const char *user)
+{
+    pam_handle_t *pamh = NULL;
+    struct pam_conv conv = { misc_conv, NULL };
+
+    int ret = pam_start("sus", user, &conv, &pamh);
+    if (ret != PAM_SUCCESS)
+        return ret;
+
+    ret = pam_authenticate(pamh, 0);
+    if (ret != PAM_SUCCESS)
+        goto end;
+
+    ret = pam_acct_mgmt(pamh, 0);
+    if (ret != PAM_SUCCESS)
+        goto end;
+
+    ret = pam_setcred(pamh, PAM_ESTABLISH_CRED);
+end:
+    pam_end(pamh, ret);
+    return ret;
+}
+```
+
+Now we can replace `shadow_auth()` with `pam_auth()`.
+
+```c {hl_lines=["8-10"]}
+static void user_auth()
+{
+    // ...
+
+    if (!in_group(userpw.pw_name, userpw.pw_gid))
+        errx(1, "User is not in the %s group", ALLOW_GROUP);
+
+    int ret = pam_auth(userpw.pw_name);
+    if (ret != PAM_SUCCESS)
+        errx(1, "PAM authentication failed: %s", pam_strerror(NULL, ret));
+}
+```
+
+Remember to link the PAM libraries when compiling:
+
+```sh {class="cmd-root"}
+cc -o sus sus.c -lpam -lpam_misc
+chmod u+s sus
+```
+
+### PAM configuration
+
+Now that we delegated our authentication to PAM,
+it's crucial that we configure it correctly.
+Otherwise, our program could stop working or become
+a security hole!
+
+PAM configuration files are stored in `/etc/pam.d/`,
+but they might differ depending on your distribution.
+
+The best bet is copying the content of `/etc/pam.d/sudo`
+and adapt it for `sus`.
+
+For example, on my machine I ended up with this `/etc/pam.d/sus`:
+```
+#%PAM-1.0
+auth 		include 	system-auth
+account 	include 	system-auth
+session 	include 	system-auth
+```
+
+## Further steps
 
 
 ## References
@@ -403,6 +624,11 @@ int main(int argc, char **argv)
 - https://github.com/Duncaen/OpenDoas
 - *Dedicated Openbsd Application Subexecutor*,\
     https://flak.tedunangst.com/post/doas
+- https://wiki.archlinux.org/title/PAM
+- https://www.redhat.com/en/blog/pluggable-authentication-modules-pam
+- https://github.com/linux-pam/linux-pam
+
+[pam]: https://github.com/linux-pam/linux-pam
 
 [^man]: https://www.sudo.ws/docs/man/1.8.10/sudo.man/
 [^doas]: https://github.com/multiplexd/doas/blob/master/doas.c
@@ -421,3 +647,5 @@ int main(int argc, char **argv)
 
 [^shadow]: Password hashes are stored in `/etc/shadow`, \
             https://man7.org/linux/man-pages/man5/shadow.5.html
+
+[^ld]: https://man7.org/linux/man-pages/man8/ld.so.8.html

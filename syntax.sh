@@ -6,6 +6,9 @@ LIGHT=xcode
 DARK=modus-vivendi
 CSS=assets/css/syntax.css
 
+LIGHTHL="bg:#d0e0f0"
+DARKHL="bg:#253040"
+
 cat << EOF > $CSS
 .cmd-user .cl::before {
   color: #669900;
@@ -23,9 +26,9 @@ EOF
 
 printf "\n/* Chroma style: %s */\n" $LIGHT >> $CSS
 printf "@media (prefers-color-scheme: light) {\n" >> $CSS
-hugo gen chromastyles --style=$LIGHT >> $CSS
+hugo gen chromastyles --highlightStyle "$LIGHTHL" --style=$LIGHT >> $CSS
 printf "}\n" >> $CSS
 printf "\n\n/* Chroma style: %s */\n" $DARK >> $CSS
 printf "@media (prefers-color-scheme: dark) {\n" >> $CSS
-hugo gen chromastyles --style=$DARK >> $CSS
+hugo gen chromastyles --highlightStyle "$DARKHL" --style=$DARK >> $CSS
 printf "}\n" >> $CSS
