@@ -11,6 +11,13 @@
   content: "root # ";
 }
 
+.chroma code {
+  padding: var(--pre-pad) 0;
+}
+.chroma .line {
+  padding: 0 var(--pre-pad);
+}
+
 /* Chroma style: xcode */
 @media (prefers-color-scheme: light) {
 /* Generated using: hugo gen chromastyles --highlightStyle bg:#d0e0f0 --style=xcode */

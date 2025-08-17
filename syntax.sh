@@ -22,6 +22,13 @@ cat << EOF > $CSS
   user-select: none;
   content: "root # ";
 }
+
+.chroma code {
+  padding: var(--pre-pad) 0;
+}
+.chroma .line {
+  padding: 0 var(--pre-pad);
+}
 EOF
 
 printf "\n/* Chroma style: %s */\n" $LIGHT >> $CSS
