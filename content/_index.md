@@ -28,5 +28,4 @@ int main() {
 
 - {{< icon bluesky small >}}      Bluesky as [fedang.net](https://bsky.app/profile/fedang.net)
 
-
 You can also contact me via email at  *{{< email "main@fedang.net" >}}*.

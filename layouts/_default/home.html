@@ -30,7 +30,7 @@
   </h2>
 
   <ul>
-  {{ range (where site.RegularPages "Section" "posts").ByDate.Reverse }}
+  {{ range first 5 (where site.RegularPages "Section" "posts").ByDate.Reverse }}
   <li>
     <h3><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h3>
     {{ .Summary }}

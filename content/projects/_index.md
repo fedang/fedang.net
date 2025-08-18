@@ -1,6 +1,7 @@
 +++
 title = "Projects"
 outputs = ['html','rss']
+nolist = true
 +++
 
 A collection of projects I've made in the past.

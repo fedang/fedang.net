@@ -1,7 +1,6 @@
 +++
 title = 'Random quotes'
-date = 2025-04-29T00:22:43+02:00
-draft = true
+date = 2025-04-01T00:22:43+02:00
 +++
 
 A collection of quotes found who-knows-where.
