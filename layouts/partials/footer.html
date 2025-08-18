@@ -1,0 +1,17 @@
+<footer>
+  <strong><a href="#">Top &#8593;</a></strong>
+  <div>
+    <span style="display: inline-flex;align-items: center;">Federico Angelilli &nbsp;
+    <a style="display: inline-flex;align-items: center;" href={{ with .Page.OutputFormats.Get "RSS" }}{{ .Permalink }}{{else}}{{"/index.xml"|absURL}}{{ end }}>
+        {{ with resources.Get "icons/rss.svg" -}}
+          <img src="{{ .RelPermalink }}" class="icon icon-small icon-invert" alt="RSS">
+        {{- end -}}
+    </a></span>
+
+    <span><a style="display: inline-flex;align-items: center;" href={{"/license"|absURL}}>BY-NC-SA 4.0 &nbsp;
+      {{ with resources.Get "icons/creative-commons.svg" -}}
+        <img src="{{ .RelPermalink }}" class="icon icon-small icon-invert" alt="CC">
+      {{- end -}}
+    </a></span>
+  </div>
+</footer>
