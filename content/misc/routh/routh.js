@@ -31,18 +31,24 @@ function routh(poly) {
 }
 
 function tab2html(container, tab) {
-  let table = document.createElement("table");
-  tab.forEach(row => {
-    let tr = document.createElement("tr");
-    row.forEach(cell => {
-      let td = document.createElement("td");
-      td.textContent = (cell !== undefined) ? cell.toFixed(3) : "";
-      tr.appendChild(td);
-    });
-    table.appendChild(tr);
-  });
+	let table = document.createElement("table");
+	for (const [i, row] of tab.entries()) {
+		let n = tab.length - i - 1;
+		let tr = document.createElement("tr");
 
-  container.appendChild(table);
+		let th = document.createElement("th");
+		th.textContent = n === 0 ? "1" : (n === 1 ? "s" : "s^"+n);
+		th.scope = "row";
+		tr.appendChild(th);
+
+		row.forEach(cell => {
+			let td = document.createElement("td");
+			td.textContent = (cell !== undefined) ? cell.toFixed(3) : "";
+			tr.appendChild(td);
+		});
+		table.appendChild(tr);
+	}
+	container.appendChild(table);
 }
 
 

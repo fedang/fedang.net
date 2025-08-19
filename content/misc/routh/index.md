@@ -13,10 +13,10 @@ A simple [Routh-Hourwitz criterion][crit] visual calculator.
 ## Online calculator
 
 <noscript>
-Javascript support is required by this tool
+Javascript support is required by this tool!
 </noscript>
 
-Enter the characteristic equation below.
+Enter the characteristic equation below as a list of coefficients.
 
 <p style="display: flex; gap: 0.4em; flex: 1;">
     <label for="poly" style="white-space: nowrap;">P(s) = </label>
