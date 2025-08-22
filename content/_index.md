@@ -1,6 +1,6 @@
 +++
 title = '~fedang'
-meta_title = "Federico Angelilli @ ~fedang"
+meta_title = "Federico Angelilli ⊣ ~fedang"
 +++
 
 ## Welcome

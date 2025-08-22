@@ -51,3 +51,8 @@ Something could be original... Don't quote me on that.
 > -- Leo Tolstoy
 > {.author}
 
+
+> I think the best IDE is a piece of paper, you write your code on it with any tool and any style you want,
+> then you take a picture of it, plug it in to a convolutional neural network to convert it to text, compile and run.
+> It is by far the best method!
+

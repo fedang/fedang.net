@@ -30,6 +30,7 @@ copyright = "Federico Angelilli © 2025"
 [params]
 	title_crumbs = false
 	custom_css = ["css/syntax.css"]
+	title_sep = "⊣"
 
 [security]
   enableInlineShortcodes = true
