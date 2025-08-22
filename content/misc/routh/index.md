@@ -1,5 +1,5 @@
 +++
-title = 'Routh-Hourwitz Criterion'
+title = 'Routh-Hourwitz criterion calculator'
 date = 2025-04-08T15:46:03+02:00
 tags = ["routh","calculator","tool","math"]
 category = ["tool"]
@@ -10,7 +10,7 @@ A simple [Routh-Hourwitz criterion][crit] visual calculator.
 
 <!--more-->
 
-## Calculator
+## Online calculator
 
 <noscript>
 Javascript support is required by this tool
@@ -24,7 +24,7 @@ Enter the characteristic equation below.
 </p>
 
 <div style="display: flex;justify-content: center;">
-<button id="start">Calculate</button>
+    <button id="start">Calculate</button>
 </div>
 
 <div id="result"></div>
@@ -37,6 +37,7 @@ Enter the characteristic equation below.
   overflow-x: auto;
   text-align: center;
 }
+
 #result table {
   margin-bottom: 1em;
 }

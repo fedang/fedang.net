@@ -39,7 +39,7 @@ Something could be original... Don't quote me on that.
 > {.author}
 
 
-> The only program that never fail is the one is never ran
+> The only program that never fail is the one that is never ran
 
 
 > I have received your letter, Dimitri Yegorovich, and thank you for it.
