@@ -8,6 +8,12 @@ Something could be original... Don't quote me on that.
 
 <!--more-->
 
+> The person who loves walking will walk further than the person who loves the destination
+>
+> -- Lao Tzu
+> {.author}
+
+
 > Unix is very simple, it just needs a genius to understand its simplicity
 >
 > -- Dennis Ritchie
@@ -35,11 +41,11 @@ Something could be original... Don't quote me on that.
 
 > The people who live in Heaven have no need to think about those who live in Hell
 >
-> -- Cho Se-hee, "The Dwarf"
+> -- Cho Se-hee
 > {.author}
 
 
-> The only program that never fail is the one that is never ran
+> The only program that never fails is the one that is never run
 
 
 > I have received your letter, Dimitri Yegorovich, and thank you for it.

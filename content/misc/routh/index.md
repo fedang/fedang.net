@@ -1,12 +1,12 @@
 +++
-title = 'Routh-Hourwitz criterion calculator'
+title = 'Routh-Hurwitz criterion calculator'
 date = 2025-04-08T15:46:03+02:00
 tags = ["routh","calculator","tool","math"]
 category = ["tool"]
 custom_js = ["routh.js"]
 +++
 
-A simple [Routh-Hourwitz criterion][crit] visual calculator.
+A simple [Routh-Hurwitz criterion][crit] visual calculator.
 
 <!--more-->
 
@@ -20,7 +20,7 @@ Enter the characteristic equation below as a list of coefficients.
 
 <p style="display: flex; gap: 0.4em; flex: 1;">
     <label for="poly" style="white-space: nowrap;">P(s) = </label>
-    <input type="text" id="poly" placeholder="s^2 + ks + 1" style="flex: 1;">
+    <input type="text" id="poly" placeholder="1, -2, 3" style="flex: 1;">
 </p>
 
 <div style="display: flex;justify-content: center;">

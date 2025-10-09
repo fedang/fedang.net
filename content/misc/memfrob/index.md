@@ -1,15 +1,29 @@
 +++
 date = 2025-08-22T14:36:29+02:00
-title = 'Use memfrob anywhere'
+title = 'Online memory frobnicator'
 category = ["tool"]
 tags = ["memfrob", "calculator", "tool"]
 custom_js = ["memfrob.js"]
 +++
 
 Have you ever felt the need to frobnicate some memory on the go?
-This is the perfect tool for that!
+Then this is the perfect tool for you!
 
 <!--more-->
+
+## What is `memfrob`?
+
+This glibc function does only one thing: xor the input bytes with `42`.
+Read the manpage [here](https://man7.org/linux/man-pages/man3/memfrob.3.html).
+
+```c
+void *memfrob(void *mem, size_t n) {
+    char *ptr = mem;
+    for (size_t i = 0; i < n; i++)
+        ptr[i] ^= 42;
+    return mem;
+}
+```
 
 ## Online calculator
 
@@ -17,7 +31,7 @@ This is the perfect tool for that!
 Javascript support is required by this tool
 </noscript>
 
-Enter what you want to frobnicate below.
+Enter what you want to frobnicate below:
 
 <div class="app">
     <textarea id="input" rows="8"></textarea>
@@ -55,21 +69,6 @@ Enter what you want to frobnicate below.
 }
 </style>
 
-## What is `memfrob`?
-
-This glibc function does only one thing: xor the input bytes with `42`.
-Here's its [manpage](https://man7.org/linux/man-pages/man3/memfrob.3.html).
-
-It essentially boils down to:
-
-```c
-void *memfrob(void *mem, size_t n) {
-    char *ptr = mem;
-    for (size_t i = 0; i < n; i++)
-        ptr[i] ^= 42;
-    return mem;
-}
-```
 
 ## Bonus: CUDA memfrob
 
@@ -105,4 +104,4 @@ void *cuda_memfrob(void *mem, size_t n)
 }
 ```
 
-Also, note that I didn't run a benchmark...
+Note that I didn't run a benchmark...
