@@ -9,6 +9,9 @@ tags = [ "x86", "real-mode", "i8086", "16-bit", "instruction", "opcode" ]
 
 <!--more-->
 
+<details open>
+<summary>Instruction list</summary>
+
 | Name                             | Description                                        | Introduced    |
 |:---------------------------------|:---------------------------------------------------|:--------------|
 | [AAA]({{< ref "#aaa" >}})        | ASCII Adjust After Addition                        | 8086          |
@@ -27,6 +30,7 @@ tags = [ "x86", "real-mode", "i8086", "16-bit", "instruction", "opcode" ]
 | [BTC]({{< ref "#btc" >}})        | Bit Test and Complement                            | 80386         |
 | [BTR]({{< ref "#btr" >}})        | Bit Test and Reset                                 | 80386         |
 | [BTS]({{< ref "#bts" >}})        | Bit Test and Set                                   | 80386         |
+| [CALL]({{< ref "#call" >}})      | Call a Procedure                                   | 8086          |
 | [CBW]({{< ref "#cbw" >}})        | Convert Byte to Word                               | 8086          |
 | [CDQ]({{< ref "#cdq" >}})        | Convert Doubleword to Quad-Word                    | 80386         |
 | [CLC]({{< ref "#clc" >}})        | Clear Carry Flag (CF)                              | 8086          |
@@ -61,14 +65,17 @@ tags = [ "x86", "real-mode", "i8086", "16-bit", "instruction", "opcode" ]
 | [INVD]({{< ref "#invd" >}})      | Invalidate data cache                              | 80486         |
 | [INVLPG]({{< ref "#invlpg" >}})  | Invalidate TBL entry                               | 80486         |
 | [IRET]({{< ref "#iret" >}})      | Return from Interrupt                              | 8086          |
+| [Jcc]({{< ref "#jcc" >}})        | Jump on Some Condition Code                        | 8086 *        |
+| [JCXZ]({{< ref "#jcxz" >}})      | Jump if CX is Zero                                 | 8086          |
+| [JMP]({{< ref "#jmp" >}})        | Jump                                               | 8086          |
 | [LAHF]({{< ref "#lahf" >}})      | Load Flags into AH Register                        | 8086          |
 | [LAR]({{< ref "#lar" >}})        | Load Access Rights Byte                            | 80286         |
-| [LDS]({{< ref "#lds" >}})        | Load Pointer Using DS                              | 8086 *        |
-| [LES]({{< ref "#les" >}})        | Load Pointer Using ES                              | 8086 *        |
-| [LFS]({{< ref "#lfs" >}})        | Load Pointer Using FS                              | 80386         |
-| [LGS]({{< ref "#lgs" >}})        | Load Pointer Using GS                              | 80386         |
-| [LSS]({{< ref "#lss" >}})        | Load Pointer Using SS                              | 80386         |
-| [LSS]({{< ref "#lss" >}})        | Load Pointer Using SS                              | 80386         |
+| [LDS]({{< ref "#lds" >}})        | Load Far Pointer Using DS                          | 8086 *        |
+| [LES]({{< ref "#les" >}})        | Load Far Pointer Using ES                          | 8086 *        |
+| [LFS]({{< ref "#lfs" >}})        | Load Far Pointer Using FS                          | 80386         |
+| [LGS]({{< ref "#lgs" >}})        | Load Far Pointer Using GS                          | 80386         |
+| [LSS]({{< ref "#lss" >}})        | Load Far Pointer Using SS                          | 80386         |
+| [LSS]({{< ref "#lss" >}})        | Load Far Pointer Using SS                          | 80386         |
 | [LEA]({{< ref "#lea" >}})        | Load Effective Address                             | 8086          |
 | [LEAVE]({{< ref "#leave" >}})    | High Level Procedure Exit                          | 80186         |
 | [LGDT]({{< ref "#lgdt" >}})      | Load Global Descriptor Table                       | 80286         |
@@ -78,6 +85,9 @@ tags = [ "x86", "real-mode", "i8086", "16-bit", "instruction", "opcode" ]
 | [LODSB]({{< ref "#lodsb" >}})    | Load Byte String                                   | 8086          |
 | [LODSW]({{< ref "#lodsw" >}})    | Load Word String                                   | 8086          |
 | [LODSD]({{< ref "#lodsd" >}})    | Load Doubleword String                             | 80386         |
+| [LOOP]({{< ref "#loop" >}})      | Loop while CX is not Zero                          | 8086          |
+| [LOOPZ]({{< ref "#loopz" >}})    | Loop while Zero                                    | 8086          |
+| [LOOPNZ]({{< ref "#loopnz" >}})  | Loop while not Zero                                | 8086          |
 | [LSL]({{< ref "#lsl" >}})        | Load Segment Limit                                 | 80286         |
 | [LTR]({{< ref "#ltr" >}})        | Load Task Register                                 | 80286         |
 | [MOV]({{< ref "#mov" >}})        | Move Data                                          | 8086 *        |
@@ -144,13 +154,6 @@ tags = [ "x86", "real-mode", "i8086", "16-bit", "instruction", "opcode" ]
 | [XCHG]({{< ref "#xchg" >}})      | Exchange                                           | 8086          |
 | [XLAT]({{< ref "#xlat" >}})      | Translate                                          | 8086          |
 | [XOR]({{< ref "#xor" >}})        | Exclusive-OR                                       | 8086          |
-| [CALL]({{< ref "#call" >}})      | Call a Procedure                                   | 8086          |
-| [Jcc]({{< ref "#jcc" >}})        | Jump on Some Condition Code                        | 8086 *        |
-| [JCXZ]({{< ref "#jcxz" >}})      | Jump if CX is Zero                                 | 8086          |
-| [JMP]({{< ref "#jmp" >}})        | Jump                                               | 8086          |
-| [LOOP]({{< ref "#loop" >}})      | Loop while CX is not Zero                          | 8086          |
-| [LOOPZ]({{< ref "#loopz" >}})    | Loop while Zero                                    | 8086          |
-| [LOOPNZ]({{< ref "#loopnz" >}})  | Loop while not Zero                                | 8086          |
 |                                  |                                                    |               |
 | [LOCK]({{< ref "#lock-signal" >}})| Assert Lock Prefix                                | 8086          |
 | [REP]({{< ref "#repeat" >}})     | Repeat String Operation Prefix                     | 8086          |
@@ -170,6 +173,7 @@ tags = [ "x86", "real-mode", "i8086", "16-bit", "instruction", "opcode" ]
 
 \*: The instruction was extended in later processors.
 
+</details>
 
 ## Encoding
 
@@ -236,6 +240,28 @@ tags = [ "x86", "real-mode", "i8086", "16-bit", "instruction", "opcode" ]
 
 \*: Available on 80386 and later machines.
 
+### Condition codes
+
+| Value (ccc) | Name        |  Meaning       |
+|:------------|:------------|:---------------|
+| 0b0000      | O           | Overflow |
+| 0b0001      | NO          | Not overflow |
+| 0b0010      | C/B/NAE     | Carry, below, not above nor equal|
+| 0b0011      | NC/AE/NB    | Not carry, above or equal, not below|
+| 0b0100      | E/Z         | Equal, zero|
+| 0b0101      | NE/NZ       | Not equal, not zero|
+| 0b0110      | BE/NA       | Below or equal, not above|
+| 0b0111      | A/NBE       | Above, not below nor equal|
+| 0b1000      | S           | Sign|
+| 0b1001      | NS          | Not sign|
+| 0b1010      | P/PE        | Parity, parity even|
+| 0b1011      | NP/PO       | Not parity, parity odd|
+| 0b1100      | L/NGE       | Less, not greater nor equal|
+| 0b1101      | GE/NL       | Greater or egual, not less|
+| 0b1110      | LE/NG       | Less or equal, not greater|
+| 0b1111      | G/NLE       | Greater, not less nor equal|
+{.width-100}
+
 
 ## Instructions
 
@@ -245,11 +271,15 @@ We will specify in both hex and binary the opcode and the values of the ModR/M b
 | Notation  | Meaning                          |
 |-----------|:---------------------------------|
 | 00 ... FF | Literal opcode in base 16        |
-| /r        | ModR/M byte with any reg value   |
+| /r        | ModR/M byte with variable reg value|
 | /0 ... /7 | ModR/M byte with fixed reg value |
 | ib        | Immediate byte (8 bits)          |
 | iw        | Immediate word (16 bits)         |
 | id        | Immediate doubleword (32 bits)   |
+| relN      | Relative displacement (N bits, signed)   |
+| ptrN      | Absolute offset (N bits)         |
+| mN        | Memory operand (N bits)          |
+| immN      | Immediate value (N bits)         |
 {.width-100}
 
 
@@ -344,63 +374,568 @@ We will specify in both hex and binary the opcode and the values of the ModR/M b
 {.width-100}
 
 ### BSF
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| BSF r16, r/m16     | 0F BC /r <br> 0000111110111100oorrrmmm |
+{.width-100}
+
 ### BSR
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| BSR r16, r/m16     | 0F BD /r <br> 0000111110111101oorrrmmm |
+{.width-100}
+
 ### BSWAP
+
+*Reverses the byte order of a 32-bit or 64-bit (destination) register. This instruction is provided for converting little-
+endian values to big-endian format and vice versa. To swap bytes in a word value (16-bit register), use the XCHG
+instruction. When the BSWAP instruction references a 16-bit register, the result is undefined.*[^bswap]
+
+[^bswap]: *BSWAP—Byte Swap*, Vol. 2A 3-129
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| BSWAP r32          | 0F C8+rrr <br> 0000111111001rrr |
+{.width-100}
+
 ### BT
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| BT r/m16, r16      | 0F A3 /r <br> 0000111110100011oorrrmmm |
+| BT r/m16, imm8     | 0F BA /4 ib <br> 0000111110111010oo100mmmiiiiiiii |
+{.width-100}
+
 ### BTC
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| BTC r/m16, r16     | 0F BB /r <br> 0000111110111011oorrrmmm |
+| BTC r/m16, imm8    | 0F BA /7 ib <br> 0000111110111010oo111mmmiiiiiiii |
+{.width-100}
+
 ### BTR
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| BTR r/m16, r16     | 0F B3 /r <br> 0000111110110011oorrrmmm |
+| BTR r/m16, imm8    | 0F BA /6 ib <br> 0000111110111010oo110mmmiiiiiiii |
+{.width-100}
+
 ### BTS
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| BTS r/m16, r16     | 0F AB /r <br> 0000111110101011oorrrmmm |
+| BTS r/m16, imm8    | 0F BA /5 ib <br> 0000111110111010oo101mmmiiiiiiii |
+{.width-100}
+
+### CALL
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| CALL rel16 \*      | E8 iw <br> 11101000iiiiiiiiiiiiiiii   |
+| CALL r/m16 \*      | FF /2 <br> 11111111oo010mmm           |
+| CALL ptr16:16 \*\* | 9A id <br> 10011010iiiiiiiiiiiiiiiissssssssssssssss |
+| CALL mem16:16 \*\* | FF /3 <br> 11111111oo011mmm           |
+{.width-100}
+
+\*: Near calls (inside the same CS segment). \
+\*\*: Far calls (changes the CS segment).
+
 ### CBW
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| CBW                | 98 <br> 10011000                      |
+{.width-100}
+
 ### CDQ
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| CDQ                | 99 <br> 10011001                      |
+{.width-100}
+
 ### CLC
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| CLC                | F8 <br> 11111000                      |
+{.width-100}
+
 ### CLD
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| CLD                | FC <br> 11111100                      |
+{.width-100}
+
 ### CLI
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| CLI                | FA <br> 11111010                      |
+{.width-100}
+
 ### CLTS
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| CLTS               | 0F 06 <br> 0000111100000110           |
+{.width-100}
+
 ### CMC
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| CMC                | F5 <br> 11110101                      |
+{.width-100}
+
 ### CMOVcc
+
+| Instruction        | Opcode                                 |
+|:-------------------|:---------------------------------------|
+| CMOVO r16, r/m16   | 0F 40 /r <br> 0000111110000000oorrrmmm |
+| CMOVNO r16, r/m16  | 0F 41 /r <br> 0000111101000001oorrrmmm |
+| CMOVB r16, r/m16   | 0F 42 /r <br> 0000111101000010oorrrmmm |
+| CMOVC r16, r/m16   | 0F 42 /r <br> 0000111101000010oorrrmmm |
+| CMOVNAE r16, r/m16 | 0F 42 /r <br> 0000111101000010oorrrmmm |
+| CMOVAE r16, r/m16  | 0F 43 /r <br> 0000111101000011oorrrmmm |
+| CMOVNB r16, r/m16  | 0F 43 /r <br> 0000111101000011oorrrmmm |
+| CMOVNC r16, r/m16  | 0F 43 /r <br> 0000111101000011oorrrmmm |
+| CMOVE r16, r/m16   | 0F 44 /r <br> 0000111101000100oorrrmmm |
+| CMOVZ r16, r/m16   | 0F 44 /r <br> 0000111101000100oorrrmmm |
+| CMOVNE r16, r/m16  | 0F 45 /r <br> 0000111101000101oorrrmmm |
+| CMOVNZ r16, r/m16  | 0F 45 /r <br> 0000111101000101oorrrmmm |
+| CMOVBE r16, r/m16  | 0F 46 /r <br> 0000111101000110oorrrmmm |
+| CMOVNA r16, r/m16  | 0F 46 /r <br> 0000111101000110oorrrmmm |
+| CMOVA r16, r/m16   | 0F 47 /r <br> 0000111101000111oorrrmmm |
+| CMOVNBE r16, r/m16 | 0F 47 /r <br> 0000111101000111oorrrmmm |
+| CMOVS r16, r/m16   | 0F 48 /r <br> 0000111101001000oorrrmmm |
+| CMOVNS r16, r/m16  | 0F 49 /r <br> 0000111101001001oorrrmmm |
+| CMOVP r16, r/m16   | 0F 4A /r <br> 0000111101001010oorrrmmm |
+| CMOVPE r16, r/m16  | 0F 4A /r <br> 0000111101001010oorrrmmm |
+| CMOVNP r16, r/m16  | 0F 4B /r <br> 0000111101001011oorrrmmm |
+| CMOVPO r16, r/m16  | 0F 4B /r <br> 0000111101001011oorrrmmm |
+| CMOVL r16, r/m16   | 0F 4C /r <br> 0000111101001100oorrrmmm |
+| CMOVNGE r16, r/m16 | 0F 4C /r <br> 0000111101001100oorrrmmm |
+| CMOVGE r16, r/m16  | 0F 4D /r <br> 0000111101001101oorrrmmm |
+| CMOVNL r16, r/m16  | 0F 4D /r <br> 0000111101001101oorrrmmm |
+| CMOVLE r16, r/m16  | 0F 4E /r <br> 0000111101001110oorrrmmm |
+| CMOVNG r16, r/m16  | 0F 4E /r <br> 0000111101001110oorrrmmm |
+| CMOVG r16, r/m16   | 0F 4F /r <br> 0000111101001111oorrrmmm |
+| CMOVNLE r16, r/m16 | 0F 4F /r <br> 0000111101001111oorrrmmm |
+{.width-100}
+
 ### CMP
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| CMP AL, imm8       | 3C ib <br> 00111100iiiiiiii           |
+| CMP AX, imm16      | 3D iw <br> 00111101iiiiiiiiiiiiiiii   |
+| CMP r/m8, imm8     | 80 /7 ib <br> 10000000oo111mmmiiiiiiii|
+| CMP r/m16, imm16   | 81 /7 iw <br> 10000001oo111mmmiiiiiiiiiiiiiiii|
+| CMP r/m16, imm8    | 83 /7 iw <br> 10000011oo111mmmiiiiiiii|
+| CMP r/m8, r8       | 38 /r <br> 00111000oorrrmmm           |
+| CMP r/m16, r16     | 39 /r <br> 00111001oorrrmmm           |
+| CMP r8, r/m8       | 3A /r <br> 00111010oorrrmmm           |
+| CMP r16, r/m16     | 3B /r <br> 00111011oorrrmmm           |
+{.width-100}
+
 ### CMPSB
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| CMPSB              | A6 <br> 10100110                      |
+{.width-100}
+
 ### CMPSW
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| CMPSW              | A7 <br> 10100111                      |
+{.width-100}
+
 ### CMPSD
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| CMPSD *            | A7 <br> 10100111                      |
+{.width-100}
+
+\*: Requires 32-bit operand size.
+
 ### CMPXCHG
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| CMPXCHG r/m8, r8   | 0F B0 /r <br> 0000111110110000oorrrmmm|
+| CMPXCHG r/m16, r16 | 0F B1 /r <br> 0000111110110001oorrrmmm|
+{.width-100}
+
 ### CPUID
+
+*Returns processor identification and feature
+information to the EAX, EBX, ECX, and EDX
+registers, as determined by input entered in
+EAX (in some cases, ECX as well).*
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| CPUID              | 0F A2 <br> 0000111110100010           |
+{.width-100}
+
 ### CWD
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| CWD                | 99 <br> 10011001                      |
+{.width-100}
+
 ### CWDE
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| CWDE               | 98 <br> 10011000                      |
+{.width-100}
+
 ### DAA
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| DAA                | 27 <br> 00100111                      |
+{.width-100}
+
 ### DAS
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| DAS                | 2F <br> 00101111                      |
+{.width-100}
+
 ### DEC
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| DEC r/m8           | FE /1 <br> 11111110oo001mmm           |
+| DEC r/m16          | FF /1 <br> 11111111oo001mmm           |
+| DEC r16            | 48+rw <br> 01001rrr                   |
+{.width-100}
+
 ### DIV
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| DIV r/m8           | F6 /6 <br> 11110110oo110mmm           |
+| DIV r/m16          | F7 /6 <br> 11110111oo110mmm           |
+{.width-100}
+
 ### ENTER
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| ENTER imm16, imm8  | C8 iw ib <br> 11001000iiiiiiiiiiiiiiiiiiiiiiii|
+{.width-100}
+
 ### HLT
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| HLT                | F4 <br> 11110100                      |
+{.width-100}
+
 ### IDIV
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| IDIV r/m8          | F6 /7 <br> 11110110oo111mmm           |
+| IDIV r/m16         | F7 /7 <br> 11110111oo111mmm           |
+{.width-100}
+
 ### IMUL
+
+| Instruction            | Opcode                                |
+|:-----------------------|:--------------------------------------|
+| IMUL r/m8              | F6 /5 <br> 11110110oo101mmm           |
+| IMUL r/m16             | F7 /5 <br> 11110111oo101mmm           |
+| IMUL r16, r/m16        | 0F AF /r <br> 0000111110101111oorrrmmm|
+| IMUL r16, r/m16, imm8  | 6B /r ib <br> 01101011oorrrmmmiiiiiiii        |
+| IMUL r16, r/m16, imm16 | 69 /r iw <br> 01101001oorrrmmmiiiiiiiiiiiiiiii |
+{.width-100}
+
 ### IN
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| IN AL, DX          | EC <br> 11101100                      |
+| IN AX, DX          | ED <br> 11101101                      |
+| IN AL, imm8        | E4 ib <br> 11100100iiiiiiii           |
+| IN AX, imm8        | E5 ib <br> 11100101iiiiiiii           |
+{.width-100}
+
 ### INC
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| INC r/m8           | FE /0 <br> 11111110oo000mmm           |
+| INC r/m16          | FF /0 <br> 11111111oo000mmm           |
+| INC r16            | 40+rw \* <br> 01000rrr                |
+{.width-100}
+
+\*: 40H through 47H are REX prefixes in 64-bit mode
+
 ### INSB
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| INSB               | 6C <br> 01101100                      |
+{.width-100}
+
 ### INSW
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| INSW               | 6D <br> 01101101                      |
+{.width-100}
+
 ### INSD
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| INSD \*            | 6D <br> 01101101                      |
+{.width-100}
+
+\*: Requires 32-bit operand size.
+
 ### INT
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| INT1               | F1 <br> 11110001                      |
+| INT3               | CC <br> 11001100                      |
+| INT imm8           | CD ib <br> 11001101iiiiiiii           |
+{.width-100}
+
 ### INTO
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| INTO               | CE <br> 11001110                      |
+{.width-100}
+
 ### INVD
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| INVD               | 0F 08 <br> 0000111100001000           |
+{.width-100}
+
 ### INVLPG
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| INVLPG m           | 0F 01 /7 <br> 0000111100000001oo111mmm|
+{.width-100}
+
 ### IRET
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| IRET               | CF <br> 11001111                      |
+{.width-100}
+
+### Jcc
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| JO rel8 \*         | 70 ib <br> 01110000iiiiiiii           |
+| JNO rel8 \*        | 71 ib <br> 01110001iiiiiiii           |
+| JB rel8 \*         | 72 ib <br> 01110010iiiiiiii           |
+| JC rel8 \*         | 72 ib <br> 01110010iiiiiiii           |
+| JNAE rel8 \*       | 72 ib <br> 01110010iiiiiiii           |
+| JAE rel8 \*        | 73 ib <br> 01110011iiiiiiii           |
+| JNB rel8 \*        | 73 ib <br> 01110011iiiiiiii           |
+| JNC rel8 \*        | 73 ib <br> 01110011iiiiiiii           |
+| JE rel8 \*         | 74 ib <br> 01110100iiiiiiii           |
+| JZ rel8 \*         | 74 ib <br> 01110100iiiiiiii           |
+| JNE rel8 \*        | 75 ib <br> 01110101iiiiiiii           |
+| JNZ rel8 \*        | 75 ib <br> 01110101iiiiiiii           |
+| JBE rel8 \*        | 76 ib <br> 01110110iiiiiiii           |
+| JNA rel8 \*        | 76 ib <br> 01110110iiiiiiii           |
+| JNBE rel8 \*       | 77 ib <br> 01110111iiiiiiii           |
+| JA rel8 \*         | 77 ib <br> 01110111iiiiiiii           |
+| JS rel8 \*         | 78 ib <br> 01111000iiiiiiii           |
+| JNS rel8 \*        | 79 ib <br> 01111001iiiiiiii           |
+| JP rel8 \*         | 7A ib <br> 01111010iiiiiiii           |
+| JPE rel8 \*        | 7A ib <br> 01111010iiiiiiii           |
+| JNP rel8 \*        | 7B ib <br> 01111011iiiiiiii           |
+| JPO rel8 \*        | 7B ib <br> 01111011iiiiiiii           |
+| JL rel8 \*         | 7C ib <br> 01111100iiiiiiii           |
+| JNGE rel8 \*       | 7C ib <br> 01111100iiiiiiii           |
+| JLE rel8 \*        | 7E ib <br> 01111101iiiiiiii           |
+| JNG rel8 \*        | 7E ib <br> 01111101iiiiiiii           |
+| JNL rel8 \*        | 7D ib <br> 01111110iiiiiiii           |
+| JGE rel8 \*        | 7D ib <br> 01111110iiiiiiii           |
+| JNLE rel8 \*       | 7F ib <br> 01111111iiiiiiii           |
+| JG rel8 \*         | 7F ib <br> 01111111iiiiiiii           |
+| JO rel16 \*\*      | 0F 80 iw <br> 00001111100010000iiiiiiiiiiiiiiii |
+| JNO rel16 \*\*     | 0F 81 iw <br> 00001111100010001iiiiiiiiiiiiiiii |
+| JB rel16 \*\*      | 0F 82 iw <br> 00001111100010010iiiiiiiiiiiiiiii |
+| JC rel16 \*\*      | 0F 82 iw <br> 00001111100010010iiiiiiiiiiiiiiii |
+| JNAE rel16 \*\*    | 0F 82 iw <br> 00001111100010010iiiiiiiiiiiiiiii |
+| JAE rel16 \*\*     | 0F 83 iw <br> 00001111100010011iiiiiiiiiiiiiiii |
+| JNB rel16 \*\*     | 0F 83 iw <br> 00001111100010011iiiiiiiiiiiiiiii |
+| JNC rel16 \*\*     | 0F 83 iw <br> 00001111100010011iiiiiiiiiiiiiiii |
+| JE rel16 \*\*      | 0F 84 iw <br> 00001111100010100iiiiiiiiiiiiiiii |
+| JZ rel16 \*\*      | 0F 84 iw <br> 00001111100010100iiiiiiiiiiiiiiii |
+| JNE rel16 \*\*     | 0F 85 iw <br> 00001111100010101iiiiiiiiiiiiiiii |
+| JNZ rel16 \*\*     | 0F 85 iw <br> 00001111100010101iiiiiiiiiiiiiiii |
+| JBE rel16 \*\*     | 0F 86 iw <br> 00001111100010110iiiiiiiiiiiiiiii |
+| JNA rel16 \*\*     | 0F 86 iw <br> 00001111100010110iiiiiiiiiiiiiiii |
+| JNBE rel16 \*\*    | 0F 87 iw <br> 00001111100010111iiiiiiiiiiiiiiii |
+| JA rel16 \*\*      | 0F 87 iw <br> 00001111100010111iiiiiiiiiiiiiiii |
+| JS rel16 \*\*      | 0F 88 iw <br> 00001111100011000iiiiiiiiiiiiiiii |
+| JNS rel16 \*\*     | 0F 89 iw <br> 00001111100011001iiiiiiiiiiiiiiii |
+| JP rel16 \*\*      | 0F 8A iw <br> 00001111100011010iiiiiiiiiiiiiiii |
+| JPE rel16 \*\*     | 0F 8A iw <br> 00001111100011010iiiiiiiiiiiiiiii |
+| JNP rel16 \*\*     | 0F 8B iw <br> 00001111100011011iiiiiiiiiiiiiiii |
+| JPO rel16 \*\*     | 0F 8B iw <br> 00001111100011011iiiiiiiiiiiiiiii |
+| JL rel16 \*\*      | 0F 8C iw <br> 00001111100011100iiiiiiiiiiiiiiii |
+| JNGE rel16 \*\*    | 0F 8C iw <br> 00001111100011100iiiiiiiiiiiiiiii |
+| JLE rel16 \*\*     | 0F 8E iw <br> 00001111100011101iiiiiiiiiiiiiiii |
+| JNG rel16 \*\*     | 0F 8E iw <br> 00001111100011101iiiiiiiiiiiiiiii |
+| JNL rel16 \*\*     | 0F 8D iw <br> 00001111100011110iiiiiiiiiiiiiiii |
+| JGE rel16 \*\*     | 0F 8D iw <br> 00001111100011110iiiiiiiiiiiiiiii |
+| JNLE rel16 \*\*    | 0F 8F iw <br> 00001111100011111iiiiiiiiiiiiiiii |
+| JG rel16 \*\*      | 0F 8F iw <br> 00001111100011111iiiiiiiiiiiiiiii |
+{.width-100}
+
+\*: Short jump. \
+\*\*: Near jump. \
+
+### JCXZ
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| JCXZ rel8          | E3 ib <br> 11100011iiiiiiii           |
+| JCXE rel8          | E3 ib <br> 11100011iiiiiiii           |
+{.width-100}
+
+### JMP
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| JMP rel8 \*        | EB ib <br> 11101011iiiiiiii           |
+| JMP rel16 \*\*     | E9 iw <br> 11101001iiiiiiiiiiiiiiii   |
+| JMP r/m16 \*\*     | FF /4 <br> 11111111oo100mmm           |
+| JMP ptr16:16 \*\*\*| EA id <br> 11101010iiiiiiiiiiiiiiiissssssssssssssss|
+| JMP m16:16 \*\*\*  | FF /5 <br> 11111111oo101mmm           |
+{.width-100}
+
+\*: Short jump. \
+\*\*: Near jump. \
+\*\*\*: Far jump.
+
 ### LAHF
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| LAHF               | 9F <br> 10011111                      |
+{.width-100}
+
 ### LAR
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| LAR r16, r/m16     | 0F 02 /r <br> 0000111100000010oorrrmmm|
+{.width-100}
+
 ### LDS
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| LDS r16, m16:16    | C5 /r <br> 11000101oorrrmmm |
+{.width-100}
+
 ### LES
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| LES r16, m16:16    | C4 /r <br> 11000100oorrrmmm |
+{.width-100}
+
 ### LFS
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| LFS r16, m16:16    | 0F B4 /r <br> 0000111110110100oorrrmmm |
+{.width-100}
+
 ### LGS
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| LGS r16, m16:16    | 0F B5 /r <br> 0000111110110101oorrrmmm |
+{.width-100}
+
 ### LSS
-### LSS
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| LSS r16, m16:16    | 0F B2 /r <br> 0000111110110010oorrrmmm |
+{.width-100}
+
 ### LEA
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| LEA r16, m         | 8D /r <br> 10001101oorrrmmm           |
+{.width-100}
+
 ### LEAVE
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| LEAVE              | C9 <br> 11001001                      |
+{.width-100}
+
 ### LGDT
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| LGDT m16&32        | 0F 01 /2 <br> 0000111100000001oo010mmm|
+{.width-100}
+
 ### LIDT
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| LIDT m16&32        | 0F 01 /3 <br> 0000111100000001oo011mmm|
+{.width-100}
+
 ### LLDT
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| LLDT m16&32        | 0F 00 /2 <br> 0000111100000000oo010mmm|
+{.width-100}
+
 ### LMSW
+
+| Instruction        | Opcode                                |
+|:-------------------|:--------------------------------------|
+| LMSW r/m16         | 0F 01 /6 <br> 0000111100000001oo110mmm|
+{.width-100}
+
 ### LODSB
 ### LODSW
 ### LODSD
+### LOOP
+### LOOPZ
+### LOOPNZ
 ### LSL
 ### LTR
 ### MOV
@@ -467,13 +1002,6 @@ We will specify in both hex and binary the opcode and the values of the ModR/M b
 ### XCHG
 ### XLAT
 ### XOR
-### CALL
-### Jcc
-### JCXZ
-### JMP
-### LOOP
-### LOOPZ
-### LOOPNZ
 
 ## Prefixes
 
