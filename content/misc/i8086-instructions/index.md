@@ -1,5 +1,5 @@
 +++
-date = 2025-10-09T19:36:42+02:00
+date = 2025-10-16T19:36:42+02:00
 title = 'x86 16-bit instruction reference'
 categories = [ "low-level", "osdev" ]
 tags = [ "x86", "real-mode", "i8086", "16-bit", "instruction", "opcode" ]
@@ -17,7 +17,7 @@ When in long mode, some of the listed instructions will be invalid.
 {{< /note >}}
 
 <details open>
-<summary>Full instruction list (collapsible)</summary>
+<summary>Instruction list (collapsible)</summary>
 
 | Name                             | Description                                        | Introduced in |
 |:---------------------------------|:---------------------------------------------------|:--------------|
@@ -53,7 +53,6 @@ When in long mode, some of the listed instructions will be invalid.
 | [CMPXCHG]({{< ref "#cmpxchg" >}})| Compare and Exchange                               | 80486         |
 | [CPUID]({{< ref "#cpuid" >}})    | CPU Identification Code                            | Pentium       |
 | [CWD]({{< ref "#cwd" >}})        | Convert Word to Doubleword                         | 8086          |
-| [CWDE]({{< ref "#cwde" >}})      | Convert Word to Extended Doubleword                | 80386         |
 | [DAA]({{< ref "#daa" >}})        | Decimal Adjust Register After Addition             | 8086          |
 | [DAS]({{< ref "#das" >}})        | Decimal Adjust AL Register After Subtraction       | 8086          |
 | [DEC]({{< ref "#dec" >}})        | Decrement by One                                   | 8086          |
@@ -609,13 +608,6 @@ EAX (in some cases, ECX as well).*
 | CWD                | 99 <br> 10011001                      |
 {.width-100}
 
-### CWDE
-
-| Instruction        | Opcode                                |
-|:-------------------|:--------------------------------------|
-| CWDE               | 98 <br> 10011000                      |
-{.width-100}
-
 ### DAA
 
 | Instruction        | Opcode                                |
@@ -1014,8 +1006,8 @@ EAX (in some cases, ECX as well).*
 | MOV r16, r/m16     | 8B /r <br> 10001011oorrrmmm           |
 | MOV r/m16, sreg    | 8C /r <br> 10001100oosssmmm           |
 | MOV sreg, r/m16    | 8E /r <br> 10001110oosssmmm           |
-| MOV AL, off8       | A0 ib <br> 10100000iiiiiiii           |
-| MOV AX, off16      | A1 iw <br> 10100001iiiiiiii           |
+| MOV AL, moff8      | A0 ib <br> 10100000iiiiiiii           |
+| MOV AX, moff16     | A1 iw <br> 10100001iiiiiiii           |
 | MOV moff8, AL      | A2 ib <br> 10100010iiiiiiii           |
 | MOV moff16, AX     | A3 iw <br> 10100011iiiiiiii           |
 | MOV r8, imm8       | B0+rb ib <br> 10110rrriiiiiiii        |
@@ -1058,7 +1050,6 @@ EAX (in some cases, ECX as well).*
 | Instruction        | Opcode                                |
 |:-------------------|:--------------------------------------|
 | MOVSX r16, r/m8    | 0F BE /r <br> 0000111110111110oorrrmmm|
-| MOVSX r16, r/m16   | 63 /r <br> 0000111110111111oorrrmmm   |
 {.width-100}
 
 ### MOVZX
