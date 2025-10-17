@@ -113,7 +113,7 @@ When in long mode, some of the listed instructions will be invalid.
 | [OUTSD]({{< ref "#outsd" >}})    | Output Doubleword from Port                        | 80386         |
 | [PAUSE]({{< ref "#pause" >}})    | Spin Loop Hint                                     | Pentium       |
 | [POP]({{< ref "#pop" >}})        | Pop a Word from the Stack                          | 8086 *        |
-| [POPA]({{< ref "#popa" >}})      | Pop All Registers                                  | 80386         |
+| [POPA]({{< ref "#popa" >}})      | Pop All Registers                                  | 80186         |
 | [POPF]({{< ref "#popf" >}})      | Pop FLAGS                                          | 8086          |
 | [PUSH]({{< ref "#push" >}})      | Push Operand onto Stack                            | 8086 *        |
 | [PUSHA]({{< ref "#pusha" >}})    | Push All Registers                                 | 80186         |
@@ -199,8 +199,8 @@ When in long mode, some of the listed instructions will be invalid.
 | Value (oo) | Meaning                                   |
 |:-----------|:------------------------------------------|
 | 0b00       | No displacement is present                |
-| 0b01       | 8-bits displacement (sign-extended to 16) |
-| 0b10       | 16-bits displacement (high : low)         |
+| 0b01       | 8-bit  displacement (sign-extended to 16) |
+| 0b10       | 16-bit  displacement (high : low)         |
 | 0b11       | r/m is treated as a reg field             |
 {.width-100}
 
@@ -381,9 +381,11 @@ We will specify in both hex and binary the opcode and the values of the ModR/M b
 
 | Instruction        | Opcode                                |
 |:-------------------|:--------------------------------------|
-| BOUND r16, r/m32   | 62 /r <br> 01100010oorrrmmm           |
-| BOUND r32, r/m64   | 62 /r <br> 01100010oorrrmmm           |
+| BOUND r16, m32     | 62 /r <br> 01100010oorrrmmm           |
+| BOUND r32, m64 \*  | 62 /r <br> 01100010oorrrmmm           |
 {.width-100}
+
+\*: Requires 32-bit operand size.
 
 ### BSF
 
