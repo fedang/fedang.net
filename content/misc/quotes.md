@@ -62,3 +62,23 @@ Something could be original... Don't quote me on that.
 > then you take a picture of it, plug it in to a convolutional neural network to convert it to text, compile and run.
 > It is by far the best method!
 
+
+> If the designers of X Windows built cars, there would be no fewer
+> than five steering wheels hidden about the cockpit, none of which fol-
+> lowed the same principles—but you’d be able to shift gears with your
+> car stereo. Useful feature, that.
+>
+> -- Marcus J. Ranum
+> {.author}
+
+
+> If it was hard to write, it should be hard to understand.
+>
+> -- A Unix programmer
+> {.author}
+
+
+> Syntactic sugar causes cancer of the semicolon.
+>
+> -- Alan J. Perlis
+> {.author}

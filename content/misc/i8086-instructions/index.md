@@ -1006,10 +1006,10 @@ EAX (in some cases, ECX as well).*
 | MOV r16, r/m16     | 8B /r <br> 10001011oorrrmmm           |
 | MOV r/m16, sreg    | 8C /r <br> 10001100oosssmmm           |
 | MOV sreg, r/m16    | 8E /r <br> 10001110oosssmmm           |
-| MOV AL, moff8      | A0 ib <br> 10100000iiiiiiii           |
-| MOV AX, moff16     | A1 iw <br> 10100001iiiiiiii           |
-| MOV moff8, AL      | A2 ib <br> 10100010iiiiiiii           |
-| MOV moff16, AX     | A3 iw <br> 10100011iiiiiiii           |
+| MOV AL, moff8      | A0 ib <br> 10100000iiiiiiiiiiiiiiii   |
+| MOV AX, moff16     | A1 iw <br> 10100001iiiiiiiiiiiiiiii   |
+| MOV moff8, AL      | A2 ib <br> 10100010iiiiiiiiiiiiiiii   |
+| MOV moff16, AX     | A3 iw <br> 10100011iiiiiiiiiiiiiiii   |
 | MOV r8, imm8       | B0+rb ib <br> 10110rrriiiiiiii        |
 | MOV r16, imm16     | B8+rw iw <br> 10111rrriiiiiiiiiiiiiiii|
 | MOV r/m8, imm8     | C6 /0 ib <br> 11000110oo000mmmiiiiiiii|
@@ -1080,7 +1080,7 @@ EAX (in some cases, ECX as well).*
 | Instruction        | Opcode                                |
 |:-------------------|:--------------------------------------|
 | NOP                | 90 <br> 10010000                      |
-| NOP r/m16 \*       | 0F 1F /0 <br> 0000ffff000fffffoo000mmm|
+| NOP r/m16 \*       | 0F 1F /0 <br> 0000111100011111oo000mmm|
 {.width-100}
 
 \*: Multi-byte NOPs were added later in the Pentium era.
