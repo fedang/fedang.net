@@ -2,7 +2,7 @@
 date = 2025-10-16T19:36:42+02:00
 title = 'x86 16-bit instruction reference'
 categories = [ "low-level", "osdev" ]
-tags = [ "x86", "real-mode", "i8086", "16-bit", "instruction", "opcode" ]
+tags = [ "x86", "real-mode", "16-bit", "instruction", "opcode" ]
 +++
 
 Reference for instructions and encodings for the x86 architecture,
@@ -14,6 +14,8 @@ restricted to 16-bit and real-address mode.
 Instructions will be valid only on the processors in which they were introduced or later ones.
 
 When in long mode, some of the listed instructions will be invalid.
+
+FPU instructions are not currently listed.
 {{< /note >}}
 
 <details open>

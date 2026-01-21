@@ -22,10 +22,5 @@ int main() {
 }
 ```
 
-## You can find me on
-
-- {{< icon github small >}}       Github as [fedang](https://github.com/fedang)
-
-- {{< icon bluesky small >}}      Bluesky as [fedang.net](https://bsky.app/profile/fedang.net)
-
-You can also contact me via email at  *{{< email "main@fedang.net" >}}*.
+You can find me on [Github](https://github.com/fedang) or
+get in touch via email at  *{{< email "main@fedang.net" >}}*.

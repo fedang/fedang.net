@@ -3,8 +3,8 @@ title = 'Setting up Ly on Gentoo'
 date = 2025-01-08T01:00:52+01:00
 categories = [ "linux", "guide" ]
 tags = [ "linux", "gentoo", "display-manager", "ly", "tty" ]
-summary = """After my TTY login run into trouble, I decided to try the `ly` display manager. \
-I wrote about my experience in getting it to work on my Gentoo system, describing each step in the process."""
+summary = """I finally decided to try `ly`, a TUI display manager. \
+This is a retelling of the steps I needed to get it to work on my Gentoo system."""
 +++
 
 > Ly is a lightweight TUI (ncurses-like) display manager for Linux and BSD.
@@ -12,10 +12,10 @@ I wrote about my experience in getting it to work on my Gentoo system, describin
 ## Premise
 
 A few months ago, my Gentoo install came to be in a rather annoying predicament.
-After booting from GRUB, I was greeted by a black screen instead of the usual TTY.
+After booting from GRUB, I was greeted by a black screen instead of the usual tty.
 I inserted my credentials nonetheless, and to my relief, I could successfully launch X.
 
-I was confident that the culprit was a kernel option for the video driver.
+I highly suspected that the culprit was a kernel option for the video driver.
 Yet I did not have quite enough time or motivation to investigate,
 so I eventually ended up getting used to logging in from a blank tty.
 
@@ -46,15 +46,14 @@ rc-update del display-manager
 rc-update add ly
 ```
 
-## Fixing the blank TTY
+## Fixing the blank tty
 
-After rebooting, my screen was once again a blank slate. :frowning:
+After rebooting, my screen was once again a blank slate...
 
 I did some digging and found a very helpful discussion on the Gentoo forum[^forum].
 Apparently newer nvidia drivers conflict with some kernel options (`FB_SIMPLE`, `SYSFB_SIMPLEFB`, `DRM_SIMPLEDRM`).
-I disabled them and recompiled my kernel (see [here]({{< ref "/posts/gentoo-kernel-upgrade" >}}) for details).
-
-Now my TTYs can be seen once again, hooray!
+I disabled them and recompiled my kernel (see [here]({{< ref "/posts/gentoo-kernel-upgrade" >}}) for details),
+which made ttys visible again.
 
 ## Moving to Openrc-init
 
@@ -94,7 +93,7 @@ This is the reason running `startx` from a shell worked, while the same scripts 
 when run by `ly`.
 
 I moved the environment initialization to the `.zprofile` file, which is always sourced.
-After this last change, I could finally start an X session from `ly`. :partying_face:
+After this last change, I could finally start an X session from `ly`.
 
 ## Configuring Ly
 
@@ -135,7 +134,6 @@ These are my initial modifications to the `/etc/ly/config.ini` file.
 
 - https://github.com/fairyglade/ly
 - https://wiki.gentoo.org/wiki/OpenRC/openrc-init
-
 
 [^gentoo]: https://github.com/fairyglade/ly#gentoo-installation
 [^forum]: https://forums.gentoo.org/viewtopic-t-1157629-start-25.html

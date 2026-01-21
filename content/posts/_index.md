@@ -4,4 +4,4 @@ outputs = ['html','rss']
 weight = 10
 +++
 
-Various articles and blog posts I've written.
+Various stuff I've written.
