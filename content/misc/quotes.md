@@ -9,14 +9,17 @@ Something could be original... Don't quote me on that.
 <!--more-->
 
 > The person who loves walking will walk further than the person who loves the destination
->
-> -- Lao Tzu
-> {.author}
 
 
 > Unix is very simple, it just needs a genius to understand its simplicity
 >
 > -- Dennis Ritchie
+> {.author}
+
+
+> Syntactic sugar causes cancer of the semicolon.
+>
+> -- Alan J. Perlis
 > {.author}
 
 
@@ -32,6 +35,12 @@ Something could be original... Don't quote me on that.
 > Give a man a fish and you feed him for a day;
 >
 > teach a man to fish and he'll ask for a fishing rod
+
+
+> Not all who wander are lost
+>
+> -- J.R.R. Tolkien
+> {.author}
 
 
 > There are 10 types of people in this world.
@@ -78,7 +87,14 @@ Something could be original... Don't quote me on that.
 > {.author}
 
 
-> Syntactic sugar causes cancer of the semicolon.
+> The world of reality has its limits; the world of imagination is boundless.
 >
-> -- Alan J. Perlis
+> -- Jean-Jacques Rousseau
+> {.author}
+
+
+> The fundamental cause of the trouble is that in the modern world the stupid
+> are cocksure while the intelligent are full of doubt.
+>
+> -- Bertrand Russell
 > {.author}
