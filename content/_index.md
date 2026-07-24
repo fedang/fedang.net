@@ -6,13 +6,13 @@ meta_title = "Federico Angelilli ⊣ ~fedang"
 ## Welcome
 
 Hello, I'm Federico :wave:.
-I love programming, especially compilers and other low-level stuff.
-Aside from computers, I enjoy cooking, cycling and reading.
-I also play CTFs sometimes.
+I'm a computer engineer, with a knack for kernels, compilers and other low-level stuff.
+I also dabbled in cybersecurity and occasionally play CTFs.
+In my free time I enjoy cycling and doing silly electronics/mechanics projects.
 
 <!--more-->
 
-This is my personal space online. Hopefully you will enjoy it as much as me.
+This is my personal space online. Hopefully, you will find something you like in here.
 
 ```c
 #include <stdio.h>
