@@ -4,7 +4,9 @@
   <h2 id="explore">Explore site
     <a class="secondary anchor" href="#explore">
       {{ with (resources.Get "icons/link.svg") -}}
-        <img src="{{ .RelPermalink }}" class="icon icon-smaller">
+        <span class="icon icon-smaller">
+          {{ .Content | safeHTML }}
+        </span>
       {{ end }}
     </a>
   </h2>
@@ -24,7 +26,9 @@
   <h2 id="latest">Latest posts
     <a class="secondary anchor" href="#latest">
       {{ with (resources.Get "icons/link.svg") -}}
-        <img src="{{ .RelPermalink }}" class="icon icon-smaller">
+        <span class="icon icon-smaller">
+          {{ .Content | safeHTML }}
+        </span>
       {{ end }}
     </a>
   </h2>
